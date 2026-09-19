@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { UserProvider, useCurrentUser } from '../lib/UserContext.jsx'
-import { BellIcon, ChevronRightIcon } from './icons.jsx'
+import { ChevronRightIcon } from './icons.jsx'
+import NotificationMenu from './NotificationMenu.jsx'
 import { ALL_NAV, BOTTOM_NAV, MAIN_NAV } from './navItems.js'
 
 function NavItem({ to, label, Icon }) {
@@ -48,10 +49,7 @@ function Topbar() {
         <strong>{current?.label ?? ''}</strong>
       </p>
       <div className="topbar-right">
-        <button type="button" className="icon-button" aria-label="알림">
-          <BellIcon />
-          <span className="badge-dot" />
-        </button>
+        <NotificationMenu />
         <NavLink to="/mypage" className="profile-chip">
           {name}
           <span className="avatar">{name.slice(0, 1)}</span>

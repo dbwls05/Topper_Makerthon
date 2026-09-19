@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useCurrentUser } from '../lib/UserContext.jsx'
-import { CATEGORY_COLORS, PREPARING_COUNT, RECOMMENDED_GRANTS } from '../data/grants.js'
+import { getPreparationProgress, getRecommendedGrants } from '../api/benefits.js'
+import { useApi } from '../hooks/useApi.js'
+import { CATEGORY_COLORS } from '../components/categoryColors.js'
 import { ArrowRightIcon, CalendarIcon, ChevronRightIcon, PinIcon } from '../components/icons.jsx'
 import heroBg from '../assets/hero-bg.png'
 import robotHero from '../assets/robot-hero.png'
@@ -119,8 +121,9 @@ function ProgressRing({ done, total }) {
 
 export default function HomePage() {
   const { givenName } = useCurrentUser()
-  const urgentGrants = RECOMMENDED_GRANTS.filter((grant) => grant.dDay <= URGENT_DAYS)
-  const total = RECOMMENDED_GRANTS.length
+  const { data: grants } = useApi(getRecommendedGrants, [])
+  const { data: progress } = useApi(getPreparationProgress, { preparing: 0, total: 0 })
+  const urgentGrants = grants.filter((grant) => grant.dDay <= URGENT_DAYS)
 
   return (
     <div className="home">
@@ -157,7 +160,7 @@ export default function HomePage() {
       <section className="home-section">
         <h2 className="section-title">{givenName}님이 신청 가능한 지원금</h2>
         <div className="grant-grid">
-          {RECOMMENDED_GRANTS.map((grant) => (
+          {grants.map((grant) => (
             <GrantCard key={grant.id} grant={grant} />
           ))}
         </div>
@@ -169,13 +172,13 @@ export default function HomePage() {
             <p className="card-eyebrow">MY PROGRESS</p>
             <h2 className="card-title">신청 준비 현황</h2>
             <p className="progress-summary">
-              맞춤 지원금 {total}개중
+              맞춤 지원금 {progress.total}개중
               <br />
-              <strong>{PREPARING_COUNT}개</strong>를 준비 중이에요
+              <strong>{progress.preparing}개</strong>를 준비 중이에요
             </p>
             <p className="progress-hint">가장 가까운 마감부터 챙겨볼까요?</p>
           </div>
-          <ProgressRing done={PREPARING_COUNT} total={total} />
+          <ProgressRing done={progress.preparing} total={progress.total} />
         </Link>
 
         <Link to="/mypage" className="card profile-card">
@@ -188,7 +191,9 @@ export default function HomePage() {
               NUDGE에게 나를 알려주세요
             </p>
           </div>
-          <img className="profile-robot" src={robotProfile} alt="" />
+          <div className="profile-visual">
+            <img className="profile-robot" src={robotProfile} alt="" />
+          </div>
         </Link>
       </div>
     </div>

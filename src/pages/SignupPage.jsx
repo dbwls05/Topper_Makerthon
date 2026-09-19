@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import signinVisual from "../public/signin.svg";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -123,7 +122,7 @@ function SignupLayout({ children }) {
     <main className="signup-page">
       <aside className="signup-visual">
         <img
-          src={signinVisual}
+          src="/signin.svg"
           alt="알아서 찾고, 끝까지 챙겨요. 내 상황에 맞는 혜택을 발견하고 신청 준비까지 놓치지 않도록."
         />
       </aside>

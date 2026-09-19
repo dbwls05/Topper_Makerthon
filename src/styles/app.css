@@ -133,6 +133,110 @@
   background: var(--danger);
 }
 
+/* ---------- 알림 패널 ---------- */
+
+.noti {
+  position: relative;
+}
+
+.noti-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: -12px;
+  z-index: 20;
+  width: 360px;
+  padding: 20px 0 8px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(38, 44, 108, 0.16);
+}
+
+.noti-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px 14px;
+  border-bottom: 1px solid #eef0f4;
+}
+
+.noti-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.noti-count {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fde8ea;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.noti-list {
+  list-style: none;
+}
+
+.noti-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.noti-item:hover {
+  background: #f7f8ff;
+}
+
+.noti-dday {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #fde8ea;
+  color: var(--danger);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.noti-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.noti-label {
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.noti-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.noti-message {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8a8f99;
+  word-break: keep-all;
+}
+
+.noti-empty {
+  padding: 28px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #9ca1ab;
+}
+
 .profile-chip {
   display: flex;
   align-items: center;
@@ -519,19 +623,35 @@
   color: #45b0f2;
 }
 
+.profile-card {
+  gap: 16px;
+}
+
+/* 문구는 두 줄 그대로 두고, 공간이 부족하면 로봇이 줄어든다 */
+.profile-card > div:first-child {
+  flex: 1 0 auto;
+}
+
 .profile-cta {
   margin-top: 56px;
-  font-size: 27px;
+  font-size: clamp(20px, 1.42vw, 27px);
   font-weight: 700;
   line-height: 1.5;
   color: var(--navy);
+  white-space: nowrap;
+}
+
+/* 시안: 로봇이 문구 오른쪽에 크게, 카드 오른쪽 아래에 붙어 있다 */
+.profile-visual {
+  flex: 0 1 242px;
+  min-width: 150px;
+  align-self: flex-end;
+  margin: 0 -34px -29px 0;
 }
 
 .profile-robot {
-  position: absolute;
-  right: 6px;
-  bottom: 24px;
-  width: 242px;
+  display: block;
+  width: 100%;
 }
 
 /* ---------- 반응형 ---------- */
@@ -564,14 +684,6 @@
   .hero-robot {
     right: 16px;
     width: 210px;
-  }
-
-  .profile-cta {
-    font-size: 22px;
-  }
-
-  .profile-robot {
-    width: 180px;
   }
 
   .progress-ring {
@@ -637,6 +749,18 @@
     padding: 0 16px;
   }
 
+  /* 모바일에서는 상단바 전체 폭 기준으로 펼친다 */
+  .noti {
+    position: static;
+  }
+
+  .noti-panel {
+    top: calc(100% + 8px);
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+
   .app-content {
     padding: 32px 16px 64px;
   }
@@ -668,11 +792,17 @@
   }
 
   .profile-card {
-    padding-bottom: 200px;
+    flex-direction: column;
   }
 
-  .profile-robot {
+  .profile-cta {
+    white-space: normal;
+    word-break: keep-all;
+  }
+
+  .profile-visual {
+    flex: none;
     width: 160px;
-    bottom: 16px;
+    margin: 0 -16px -24px 0;
   }
 }

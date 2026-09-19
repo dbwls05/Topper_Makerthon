@@ -1,5 +1,6 @@
-// TODO: 추천 API가 붙기 전까지 쓰는 임시 데이터
-export const RECOMMENDED_GRANTS = [
+// TODO: API 연동 전까지 쓰는 임시 데이터. 연동 후에는 이 파일을 지운다.
+
+export const MOCK_GRANTS = [
   {
     id: 'youth-job',
     category: '취업',
@@ -35,11 +36,17 @@ export const RECOMMENDED_GRANTS = [
   },
 ]
 
-export const CATEGORY_COLORS = {
-  취업: '#ef4444',
-  주거: '#3b82f6',
-  교육: '#22c55e',
-}
+export const MOCK_PROGRESS = { preparing: 1, total: MOCK_GRANTS.length }
 
-// TODO: 사용자의 실제 준비 현황으로 교체
-export const PREPARING_COUNT = 1
+export const MOCK_NOTIFICATIONS = [
+  {
+    id: 'noti-youth-job',
+    type: 'deadline',
+    grantId: 'youth-job',
+    title: '청년 취업 지원사업',
+    message: '신청 마감까지 5일 남았어요. 서류를 미리 준비해 두세요.',
+    deadline: '2026-09-24',
+    dDay: 5,
+    read: false,
+  },
+]
