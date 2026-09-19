@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { UserProvider, useCurrentUser } from '../lib/UserContext.jsx'
+import { useCurrentUser } from '../lib/UserContext.jsx'
 import { ChevronRightIcon } from './icons.jsx'
 import NotificationMenu from './NotificationMenu.jsx'
 import { ALL_NAV, BOTTOM_NAV, MAIN_NAV } from './navItems.js'
@@ -18,8 +18,8 @@ function NavItem({ to, label, Icon }) {
 function Sidebar() {
   return (
     <aside className="sidebar">
-      <NavLink to="/home" className="sidebar-logo">
-        로고
+      <NavLink to="/home" className="sidebar-logo" aria-label="NUDGE 홈">
+        <img src="/logo.svg" alt="nudge" width="85" height="29" />
       </NavLink>
       <p className="sidebar-section">WORKSPACE</p>
       <nav className="sidebar-nav">
@@ -59,18 +59,22 @@ function Topbar() {
   )
 }
 
+// 여백 없이 화면을 꽉 채우는 페이지 (입력창이 하단에 붙는 채팅 화면)
+const FLUSH_PATHS = ['/agent']
+
 export default function AppLayout() {
+  const { pathname } = useLocation()
+  const flush = FLUSH_PATHS.some((path) => pathname.startsWith(path))
+
   return (
-    <UserProvider>
-      <div className="app-shell">
-        <Sidebar />
-        <div className="app-main">
-          <Topbar />
-          <main className="app-content">
-            <Outlet />
-          </main>
-        </div>
+    <div className="app-shell">
+      <Sidebar />
+      <div className="app-main">
+        <Topbar />
+        <main className={`app-content${flush ? ' app-content--flush' : ''}`}>
+          <Outlet />
+        </main>
       </div>
-    </UserProvider>
+    </div>
   )
 }

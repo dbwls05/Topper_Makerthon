@@ -1,36 +1,13 @@
 import { useState } from 'react'
 import { saveMyProfile } from '../api/benefits.js'
+import {
+  EMPLOYMENT_STATUSES,
+  INCOME_LEVELS,
+  INTEREST_CATEGORIES,
+  REGIONS,
+} from '../constants/profileOptions.js'
 
-// profiles 테이블의 컬럼 값으로 그대로 저장되는 선택지들
-const REGIONS = [
-  '서울특별시',
-  '부산광역시',
-  '대구광역시',
-  '인천광역시',
-  '광주광역시',
-  '대전광역시',
-  '울산광역시',
-  '세종특별자치시',
-  '경기도',
-  '강원특별자치도',
-  '충청북도',
-  '충청남도',
-  '전북특별자치도',
-  '전라남도',
-  '경상북도',
-  '경상남도',
-  '제주특별자치도',
-]
-const INCOME_LEVELS = [
-  '기초생활수급',
-  '중위소득 50% 이하',
-  '중위소득 100% 이하',
-  '중위소득 150% 이하',
-  '중위소득 150% 초과',
-]
 const HOUSEHOLD_TYPES = ['1인 가구', '신혼부부', '다자녀', '한부모', '기타']
-const EMPLOYMENT_STATUSES = ['재직', '구직 중', '자영업', '학생', '기타']
-export const INTEREST_CATEGORIES = ['취업', '주거', '교육', '복지', '자산형성', '창업']
 
 const THIS_YEAR = new Date().getFullYear()
 
@@ -98,7 +75,8 @@ export default function ProfileForm({ initial, onSaved, onCancel }) {
         interests: form.interests,
       })
       onSaved(saved)
-    } catch {
+    } catch (error) {
+      console.error('[프로필 저장 실패]', error)
       setError('저장하지 못했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setSubmitting(false)

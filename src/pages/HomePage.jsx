@@ -1,14 +1,21 @@
 import { Link } from 'react-router-dom'
 import { useCurrentUser } from '../lib/UserContext.jsx'
-import { getPreparationProgress, getRecommendedGrants } from '../api/benefits.js'
+import { getPreparationProgress, getRecommendedGrants, isUrgent } from '../api/benefits.js'
 import { useApi } from '../hooks/useApi.js'
 import { CATEGORY_COLORS } from '../components/categoryColors.js'
+import SaveGrantButton from '../components/SaveGrantButton.jsx'
 import { ArrowRightIcon, CalendarIcon, ChevronRightIcon, PinIcon } from '../components/icons.jsx'
 import heroBg from '../assets/hero-bg.png'
 import robotHero from '../assets/robot-hero.png'
 import robotProfile from '../assets/robot-profile.png'
 
-const URGENT_DAYS = 7
+const GRID_SIZE = 3
+
+// 상시 모집(마감일 없음)은 D-day 대신 '상시'
+function formatDDay(dDay) {
+  if (dDay === null) return '상시'
+  return dDay === 0 ? 'D-Day' : `D-${dDay}`
+}
 
 // 예: "MONDAY · SEPTEMBER 19"
 function formatToday(date) {
@@ -40,7 +47,7 @@ function DeadlineCard({ grants }) {
                     {grant.region} · {grant.category}
                   </p>
                 </div>
-                <span className="deadline-dday">D-{grant.dDay}</span>
+                <span className="deadline-dday">{formatDDay(grant.dDay)}</span>
               </li>
             )
           })}
@@ -53,10 +60,13 @@ function DeadlineCard({ grants }) {
 function GrantCard({ grant }) {
   return (
     <article className="card grant-card">
-      <p className="grant-category">
-        <span className="dot" style={{ background: CATEGORY_COLORS[grant.category] }} />
-        {grant.category}
-      </p>
+      <div className="grant-card-top">
+        <p className="grant-category">
+          <span className="dot" style={{ background: CATEGORY_COLORS[grant.category] }} />
+          {grant.category}
+        </p>
+        <SaveGrantButton grantId={grant.id} />
+      </div>
       <h3 className="grant-title">{grant.title}</h3>
       <p className="grant-desc">{grant.description}</p>
       <p className="grant-meta">
@@ -64,7 +74,7 @@ function GrantCard({ grant }) {
           <PinIcon /> {grant.agency}
         </span>
         <span>
-          <CalendarIcon /> D-{grant.dDay}
+          <CalendarIcon /> {formatDDay(grant.dDay)}
         </span>
       </p>
       <Link to="/search" className="grant-benefit">
@@ -123,7 +133,7 @@ export default function HomePage() {
   const { givenName } = useCurrentUser()
   const { data: grants } = useApi(getRecommendedGrants, [])
   const { data: progress } = useApi(getPreparationProgress, { preparing: 0, total: 0 })
-  const urgentGrants = grants.filter((grant) => grant.dDay <= URGENT_DAYS)
+  const urgentGrants = grants.filter(isUrgent)
 
   return (
     <div className="home">
@@ -160,14 +170,14 @@ export default function HomePage() {
       <section className="home-section">
         <h2 className="section-title">{givenName}님이 신청 가능한 지원금</h2>
         <div className="grant-grid">
-          {grants.map((grant) => (
+          {grants.slice(0, GRID_SIZE).map((grant) => (
             <GrantCard key={grant.id} grant={grant} />
           ))}
         </div>
       </section>
 
       <div className="home-bottom">
-        <Link to="/my-grants" className="card progress-card">
+        <Link to="/documents" className="card progress-card">
           <div>
             <p className="card-eyebrow">MY PROGRESS</p>
             <h2 className="card-title">신청 준비 현황</h2>
@@ -181,7 +191,7 @@ export default function HomePage() {
           <ProgressRing done={progress.preparing} total={progress.total} />
         </Link>
 
-        <Link to="/mypage" className="card profile-card">
+        <Link to="/profile/setup" className="card profile-card">
           <div>
             <p className="card-eyebrow">MY PROFILE</p>
             <h2 className="card-title">맞춤 프로필</h2>
