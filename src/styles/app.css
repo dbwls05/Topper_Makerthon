@@ -934,3 +934,139 @@
     margin: 0 -16px -24px 0;
   }
 }
+
+/* ---------- 마이페이지 계정 카드 ---------- */
+
+.account-card {
+  margin-top: 32px;
+  padding: 28px 32px;
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.account-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.account-email {
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+.account-card .btn {
+  margin-top: 14px;
+}
+
+/* ---------- 마이페이지 프로필 입력 ---------- */
+
+.profile-empty {
+  margin-top: 8px;
+  padding: 48px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-empty-robot {
+  width: 140px;
+  height: auto;
+}
+
+.profile-empty-title {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2229;
+}
+
+.profile-empty-desc {
+  margin: 10px 0 28px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+
+.profile-form {
+  margin-top: 28px;
+  padding: 32px;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+}
+
+.profile-form .field select {
+  width: 100%;
+  padding: 11px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.profile-form .field select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: #4b5060;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.chip.is-selected {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #fff;
+}
+
+.profile-form-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.profile-form-save {
+  width: auto;
+  padding: 10px 28px;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .profile-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

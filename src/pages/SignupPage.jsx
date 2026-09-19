@@ -1,21 +1,34 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
+import AuthLayout from "../components/AuthLayout.jsx";
+import PasswordInput from "../components/PasswordInput.jsx";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// 공백 없는 영문/숫자/특수기호(ASCII)만 허용하고, 특수기호는 1개 이상 필요
+const PASSWORD_ASCII_REGEX = /^[\x21-\x7E]+$/;
+const PASSWORD_SPECIAL_REGEX = /[^A-Za-z0-9]/;
+const PHONE_REGEX = /^01[016789]\d{7,8}$/;
+
+// 숫자만 남기고 010-1234-5678 형태로 보여준다
+function formatPhone(value) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  if (digits.length <= 10)
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
 
 const INITIAL_FORM = {
   name: "",
   email: "",
+  phone: "",
   password: "",
   passwordConfirm: "",
   agreed: false,
 };
-
-// 성공 시 화면 분기에 쓰는 상태
-// demo: Supabase 미설정 데모 모드 여부
-// emailConfirmed: 이메일 인증 메일을 기다려야 하는지 (Supabase 설정에 따라 다름)
-const INITIAL_DONE = { demo: false, emailConfirmed: true };
 
 function validate(form) {
   const errors = {};
@@ -23,8 +36,16 @@ function validate(form) {
     errors.name = "이름을 2자 이상 입력해 주세요.";
   if (!EMAIL_REGEX.test(form.email.trim()))
     errors.email = "올바른 이메일 형식이 아니에요.";
+  if (!PHONE_REGEX.test(form.phone.replace(/\D/g, "")))
+    errors.phone = "올바른 휴대폰 번호를 입력해 주세요.";
   if (form.password.length < 8)
     errors.password = "비밀번호는 8자 이상이어야 해요.";
+  else if (!PASSWORD_ASCII_REGEX.test(form.password))
+    errors.password = "비밀번호는 영문, 숫자, 특수기호로만 입력해 주세요.";
+  else if (!/[A-Za-z]/.test(form.password))
+    errors.password = "비밀번호에 영문을 포함해 주세요.";
+  else if (!PASSWORD_SPECIAL_REGEX.test(form.password))
+    errors.password = "비밀번호에 특수기호를 1개 이상 포함해 주세요.";
   if (form.password !== form.passwordConfirm)
     errors.passwordConfirm = "비밀번호가 일치하지 않아요.";
   if (!form.agreed) errors.agreed = "약관에 동의해 주세요.";
@@ -64,99 +85,19 @@ function CheckIcon() {
   );
 }
 
-function EyeIcon({ open }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M2 12C4 7.5 7.6 5 12 5s8 2.5 10 7c-2 4.5-5.6 7-10 7s-8-2.5-10-7Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="12" r="3" fill="currentColor" />
-      {!open && (
-        <path
-          d="M4 20L20 4"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      )}
-    </svg>
-  );
-}
-
-function PasswordInput({ id, value, onChange, invalid }) {
-  const [visible, setVisible] = useState(false);
-  return (
-    <div className="input-wrap">
-      <input
-        id={id}
-        type={visible ? "text" : "password"}
-        value={value}
-        onChange={onChange}
-        placeholder="8자이상 입력하세요"
-        autoComplete="new-password"
-        className={invalid ? "invalid" : ""}
-      />
-      <button
-        type="button"
-        className="input-toggle"
-        onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? "비밀번호 숨기기" : "비밀번호 보기"}
-      >
-        <EyeIcon open={visible} />
-      </button>
-    </div>
-  );
-}
-
-function SignupLayout({ children }) {
-  return (
-    <main className="signup-page">
-      <aside className="signup-visual">
-        <img
-          src="/signin.svg"
-          alt="알아서 찾고, 끝까지 챙겨요. 내 상황에 맞는 혜택을 발견하고 신청 준비까지 놓치지 않도록."
-        />
-      </aside>
-      <section className="signup-content">
-        <div className="signup-inner">{children}</div>
-      </section>
-    </main>
-  );
-}
-
-function SuccessPanel({ form, done }) {
+// Supabase에서 이메일 인증(Confirm email)을 다시 켰을 때만 보이는 화면
+function EmailConfirmPanel({ email }) {
   return (
     <div className="success-panel">
       <div className="success-icon">
         <CheckIcon />
       </div>
-      <h1 className="success-title">
-        {done.emailConfirmed ? "인증 메일을 보냈어요!" : "회원가입 완료!"}
-      </h1>
-      {done.demo && (
-        <p className="success-desc">(데모 모드 — 실제로 저장되지는 않았어요)</p>
-      )}
-      {done.emailConfirmed ? (
-        <p className="success-desc">
-          <span className="success-mail">{form.email}</span> 로 인증 메일을
-          보냈어요.
-          <br />
-          메일함(스팸함 포함)에서 인증 후 로그인해 주세요.
-        </p>
-      ) : (
-        <p className="success-desc">
-          바로 로그인해서 서비스를 시작할 수 있어요.
-        </p>
-      )}
+      <h1 className="success-title">인증 메일을 보냈어요!</h1>
+      <p className="success-desc">
+        <span className="success-mail">{email}</span> 로 인증 메일을 보냈어요.
+        <br />
+        메일함(스팸함 포함)에서 인증 후 로그인해 주세요.
+      </p>
       <div className="success-actions">
         <Link className="btn btn--primary" to="/login">
           로그인하러 가기
@@ -171,7 +112,8 @@ export default function SignupPage() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(null);
+  const [done, setDone] = useState(false);
+  const navigate = useNavigate();
 
   function updateField(key) {
     return (event) => {
@@ -200,14 +142,20 @@ export default function SignupPage() {
       if (!supabase) {
         // Supabase 미설정 시 데모 모드: 저장 없이 성공 화면까지만 흐름을 보여준다
         await new Promise((resolve) => setTimeout(resolve, 600));
-        setDone({ ...INITIAL_DONE, demo: true, emailConfirmed: false });
+        navigate("/home", { replace: true });
         return;
       }
 
       const { data, error } = await supabase.auth.signUp({
         email: form.email.trim(),
         password: form.password,
-        options: { data: { name: form.name.trim() } }, // user_metadata에 이름 저장
+        // user_metadata에 이름·전화번호 저장 → 트리거가 profiles로 복사
+        options: {
+          data: {
+            name: form.name.trim(),
+            phone: form.phone.replace(/\D/g, ""),
+          },
+        },
       });
 
       if (error) {
@@ -215,8 +163,14 @@ export default function SignupPage() {
         return;
       }
 
-      // 이메일 인증을 켜두면 session이 null로 오고, 꺼두면 바로 session이 발급된다
-      setDone({ ...INITIAL_DONE, emailConfirmed: !data.session });
+      // 이메일 인증을 꺼두면 가입과 동시에 session이 발급된다 → 바로 로그인 상태로 메인으로 보낸다
+      if (data.session) {
+        navigate("/home", { replace: true });
+        return;
+      }
+
+      // 이메일 인증을 다시 켜면 session이 null로 와서 안내 화면을 보여준다
+      setDone(true);
     } catch {
       setFormError(
         "네트워크 문제로 가입에 실패했어요. 인터넷 연결을 확인해 주세요.",
@@ -228,14 +182,14 @@ export default function SignupPage() {
 
   if (done) {
     return (
-      <SignupLayout>
-        <SuccessPanel form={form} done={done} />
-      </SignupLayout>
+      <AuthLayout>
+        <EmailConfirmPanel email={form.email} />
+      </AuthLayout>
     );
   }
 
   return (
-    <SignupLayout>
+    <AuthLayout>
       <h1 className="signup-title">
         <strong>나에게 맞는 혜택</strong>을
         <br />
@@ -288,12 +242,34 @@ export default function SignupPage() {
         </div>
 
         <div className="field">
+          <label htmlFor="phone">전화번호</label>
+          <input
+            id="phone"
+            type="tel"
+            inputMode="numeric"
+            value={form.phone}
+            onChange={(event) =>
+              updateField("phone")({
+                target: { type: "text", value: formatPhone(event.target.value) },
+              })
+            }
+            placeholder="010-0000-0000"
+            autoComplete="tel"
+            className={fieldErrors.phone ? "invalid" : ""}
+          />
+          {fieldErrors.phone && (
+            <p className="field-error">{fieldErrors.phone}</p>
+          )}
+        </div>
+
+        <div className="field">
           <label htmlFor="password">비밀번호</label>
           <PasswordInput
             id="password"
             value={form.password}
             onChange={updateField("password")}
             invalid={Boolean(fieldErrors.password)}
+            placeholder="영문 8자 이상, 특수기호 1개 이상"
           />
           {fieldErrors.password && (
             <p className="field-error">{fieldErrors.password}</p>
@@ -339,6 +315,6 @@ export default function SignupPage() {
       <p className="auth-switch">
         이미 계정이 있나요? <Link to="/login">로그인</Link>
       </p>
-    </SignupLayout>
+    </AuthLayout>
   );
 }
