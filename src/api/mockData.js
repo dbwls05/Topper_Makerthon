@@ -38,15 +38,6 @@ export const MOCK_GRANTS = [
 
 export const MOCK_PROGRESS = { preparing: 1, total: MOCK_GRANTS.length }
 
-export const MOCK_PROFILE = {
-  region: '서울특별시',
-  birthYear: 1999,
-  incomeLevel: null,
-  householdType: '1인 가구',
-  employmentStatus: '구직 중',
-  interestCategory: '취업, 주거',
-}
-
 export const MOCK_NOTIFICATIONS = [
   {
     id: 'noti-youth-job',

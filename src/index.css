@@ -194,6 +194,10 @@ body {
   font-size: 14px;
 }
 
+.btn--spaced {
+  margin-top: 12px;
+}
+
 .auth-switch {
   margin-top: 20px;
   text-align: center;
