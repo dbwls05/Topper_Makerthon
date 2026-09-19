@@ -1,0 +1,532 @@
+/* ---------- 서류 체크 (시안: 서류체크.svg, 1920×1080 기준) ----------
+   상단 검색창(높이 70) → 왼쪽 목록/체크리스트(871) + 오른쪽 NUDGE 패널(552) */
+
+.docs {
+  padding-left: 20px;
+}
+
+/* 상단 검색 */
+
+.docs-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 70px;
+  padding: 0 32px;
+  border-radius: 35px;
+  background: #fff;
+}
+
+.docs-search-icon {
+  display: flex;
+  color: #6b7080;
+}
+
+.docs-search input {
+  flex: 1;
+  height: 100%;
+  margin-left: 14px;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: 16px;
+  color: #1f2229;
+}
+
+.docs-search input::placeholder {
+  color: #a3a8b3;
+}
+
+.docs-search:focus-within {
+  box-shadow: 0 0 0 2px #d9ddff;
+}
+
+.docs-search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(38, 44, 108, 0.14);
+  list-style: none;
+}
+
+.docs-search-results button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 16px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.docs-search-results button:hover {
+  background: #f7f8ff;
+}
+
+.docs-search-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.docs-search-meta {
+  grid-column: 1;
+  font-size: 13px;
+  color: #8a8f99;
+}
+
+.docs-search-action {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #273071;
+}
+
+.docs-search-empty {
+  padding: 18px;
+  font-size: 14px;
+  color: #9ca1ab;
+  text-align: center;
+}
+
+.docs-error {
+  margin: 16px 0 0;
+}
+
+/* 2단 레이아웃 */
+
+.docs-layout {
+  margin-top: 46px;
+  display: grid;
+  grid-template-columns: minmax(0, 871fr) minmax(0, 552fr);
+  gap: 33px;
+  align-items: start;
+}
+
+.docs-loading {
+  font-size: 14px;
+  color: #9ca1ab;
+}
+
+/* 선택한 혜택 카드 오른쪽 위 — 담은 혜택 목록으로 */
+.docs-back {
+  position: absolute;
+  top: 28px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  color: #8a8f99;
+  text-decoration: none;
+}
+
+.docs-back:hover {
+  color: #273071;
+}
+
+/* 선택한 혜택 카드 */
+
+.docs-grant {
+  position: relative;
+  min-height: 165px;
+  padding: 34px 24px 28px;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.docs-grant-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: #273071;
+}
+
+.docs-grant-title {
+  margin-top: 14px;
+  font-size: 22px;
+  font-weight: 500;
+  color: #1f2229;
+}
+
+.docs-grant-sub {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #6b7080;
+}
+
+.docs-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.docs-section-title span {
+  font-size: 16px;
+  color: #273071;
+}
+
+.docs-section-title--list {
+  margin: 55px 0 20px;
+}
+
+.docs-section-desc {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #7c818c;
+}
+
+/* 서류 체크리스트 */
+
+.docs-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.docs-item {
+  display: flex;
+  align-items: center;
+  min-height: 91px;
+  padding: 0 24px;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.docs-item-check {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 91px;
+  font-size: 18px;
+  color: #6b7080;
+  cursor: pointer;
+}
+
+.docs-item-check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.docs-checkbox {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e3e6ee;
+  border-radius: 6px;
+  background: #fff;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.docs-item.is-checked .docs-checkbox {
+  border-color: #273071;
+  background: #273071;
+}
+
+.docs-item-check input:focus-visible + .docs-checkbox {
+  outline: 2px solid #273071;
+  outline-offset: 2px;
+}
+
+.docs-item-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 8px 12px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 18px;
+  color: #6b7080;
+  cursor: pointer;
+}
+
+.docs-item-action:hover {
+  color: #273071;
+}
+
+/* 담은 혜택 목록 */
+
+.docs-saved-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.docs-saved-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border-radius: 16px;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 0.15s;
+}
+
+.docs-saved-card:hover {
+  box-shadow: 0 10px 24px rgba(39, 48, 113, 0.08);
+}
+
+.docs-saved-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.docs-saved-category {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #8a8f99;
+}
+
+.docs-saved-title {
+  font-size: 19px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.docs-saved-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #273071;
+  white-space: nowrap;
+}
+
+.docs-saved-bar {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef0f6;
+}
+
+.docs-saved-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #273071;
+}
+
+.docs-empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 72px 24px;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.docs-empty-title {
+  font-size: 19px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.docs-empty-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #7c818c;
+}
+
+.docs-empty-link {
+  margin-top: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: #273071;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* 오른쪽 NUDGE 패널 */
+
+.docs-ask {
+  position: sticky;
+  top: 125px;
+  min-height: 617px;
+  display: flex;
+  flex-direction: column;
+  padding: 73px 44px 66px;
+  border-radius: 16px;
+  background-color: #030a24;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+}
+
+.docs-ask-title {
+  font-size: 34px;
+  font-weight: 300;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+}
+
+.docs-ask-title strong {
+  font-weight: 800;
+}
+
+.docs-ask-sub {
+  margin-top: 70px;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.docs-ask-sub strong {
+  font-weight: 700;
+}
+
+.docs-ask-desc {
+  margin-top: 20px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  word-break: keep-all;
+}
+
+.docs-ask-input {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  height: 72px;
+  padding: 0 16px 0 34px;
+  border-radius: 36px;
+  background: #fff;
+}
+
+.docs-ask-input input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: 15px;
+  color: #1f2229;
+}
+
+.docs-ask-input input::placeholder {
+  color: #8a8f99;
+}
+
+.docs-ask-input button {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: #273071;
+  color: #fff;
+  cursor: pointer;
+}
+
+.docs-ask-input button:disabled {
+  cursor: not-allowed;
+}
+
+@media (max-width: 1400px) {
+  .docs {
+    padding-left: 0;
+  }
+
+  .docs-ask-title {
+    font-size: 28px;
+  }
+
+  .docs-ask-sub {
+    margin-top: 48px;
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .docs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-ask {
+    position: static;
+    min-height: 0;
+    padding: 40px 28px 32px;
+  }
+
+  .docs-ask-input {
+    margin-top: 32px;
+  }
+}
+
+@media (max-width: 860px) {
+  .docs-search {
+    height: 56px;
+    padding: 0 20px;
+  }
+
+  .docs-layout {
+    margin-top: 24px;
+  }
+
+  .docs-saved-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-item,
+  .docs-item-check {
+    min-height: 68px;
+  }
+
+  .docs-item {
+    padding: 0 16px;
+  }
+
+  .docs-item-check {
+    gap: 14px;
+    font-size: 16px;
+  }
+
+  .docs-checkbox {
+    width: 34px;
+    height: 34px;
+  }
+
+  .docs-item-action {
+    font-size: 14px;
+  }
+
+  .docs-ask-input {
+    height: 60px;
+    padding-left: 20px;
+  }
+}

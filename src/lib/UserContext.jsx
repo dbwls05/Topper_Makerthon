@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
+import { refreshSavedGrants } from './savedGrants.js'
 
 // TODO: 로그인 기능이 붙으면 이 임시 이름은 지워도 된다.
 // 로그인한 사용자가 있으면 회원가입 때 저장한 user_metadata.name 을 대신 쓴다.
@@ -34,6 +35,12 @@ export function UserProvider({ children }) {
     })
     return () => data.subscription.unsubscribe()
   }, [])
+
+  // 로그인/로그아웃하면 "담은 혜택" 목록을 그 사용자 기준으로 다시 불러온다
+  const userId = user?.id ?? null
+  useEffect(() => {
+    refreshSavedGrants().catch(() => {})
+  }, [userId])
 
   const name = nameFromUser(user)
   const value = {

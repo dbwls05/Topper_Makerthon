@@ -72,10 +72,20 @@ export default function NotificationMenu() {
             <ul className="noti-list">
               {notifications.map((item) => (
                 <li key={item.id}>
-                  <Link to="/my-grants" className="noti-item" onClick={() => setOpen(false)}>
-                    <span className="noti-dday">D-{item.dDay}</span>
+                  <Link
+                    to={item.grantId ? `/documents/${item.grantId}` : '/documents'}
+                    className="noti-item"
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.type === 'deadline' ? (
+                      <span className="noti-dday">{item.dDay === 0 ? 'D-Day' : `D-${item.dDay}`}</span>
+                    ) : (
+                      <span className="noti-dday noti-dday--info">알림</span>
+                    )}
                     <span className="noti-body">
-                      <span className="noti-label">신청 마감 임박</span>
+                      {item.type === 'deadline' && (
+                        <span className="noti-label">신청 마감 임박</span>
+                      )}
                       <strong className="noti-name">{item.title}</strong>
                       <span className="noti-message">{item.message}</span>
                     </span>

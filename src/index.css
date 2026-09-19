@@ -292,6 +292,8 @@ body {
 .signup-inner {
   width: 100%;
   max-width: 392px;
+  /* 시안은 폼이 오른쪽 영역 가운데보다 약간 왼쪽(1920 기준 x=1037)에 있다 */
+  margin-right: clamp(0px, 12vw - 85px, 145px);
 }
 
 .signup-title {

@@ -1,0 +1,230 @@
+/* ---------- 맞춤 프로필 설정 (4단계 입력 + 분석) ----------
+   시안 기준(1920×1080): 제목 y≈214, 진행바 y≈325, 버튼 y≈833~897.
+   단계마다 버튼 위치가 같도록 고정 높이의 세로 레이아웃으로 둔다. */
+
+.setup {
+  display: flex;
+  flex-direction: column;
+  min-height: 684px;
+}
+
+.setup-title {
+  font-size: 32px;
+  font-weight: 700;
+  white-space: nowrap; /* 시안: 5단계 제목은 폼 폭보다 길어도 한 줄 */
+}
+
+.setup-title strong {
+  font-weight: 700;
+}
+
+.setup-subtitle {
+  margin-top: 10px;
+  font-size: 15px;
+  color: #8a8f99;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+}
+
+.setup-progress {
+  margin-top: 35px;
+  height: 4px;
+  border-radius: 999px;
+  background: #eef0f4;
+  overflow: hidden;
+}
+
+.setup-progress.is-hidden {
+  visibility: hidden;
+}
+
+.setup-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width 0.35s ease;
+}
+
+.setup-body {
+  flex: 1;
+  margin: 32px 0 16px;
+}
+
+.setup-body .field {
+  margin-bottom: 26px;
+}
+
+.setup-body .field label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #3b3f47;
+}
+
+/* 거주지역 셀렉트 / 생년월일 */
+
+.setup-select {
+  position: relative;
+  color: #9ca1ab;
+}
+
+.setup-select select,
+.setup-date {
+  width: 100%;
+  height: 54px;
+  padding: 0 16px;
+  border: 1px solid #dfe2e8;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1f2229;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.setup-select select {
+  appearance: none;
+  padding-right: 44px;
+  cursor: pointer;
+}
+
+.setup-select select:invalid,
+.setup-select select:has(option[value='']:checked) {
+  color: var(--placeholder);
+}
+
+.setup-select svg {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.setup-date::-webkit-calendar-picker-indicator {
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+.setup-select select:focus,
+.setup-date:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* 선택지 카드 */
+
+.setup-options {
+  display: grid;
+  gap: 10px;
+}
+
+.setup-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 68px;
+  padding: 0 30px;
+  border: 1px solid #e6e8ee;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  color: #3b3f47;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
+}
+
+.setup-option:hover {
+  border-color: #c9cde0;
+}
+
+.setup-option.is-centered {
+  justify-content: center;
+}
+
+.setup-option.is-selected {
+  border-color: var(--primary);
+  background: #f3f4fb;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.setup-option:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.setup-option-icon {
+  display: flex;
+}
+
+/* 5단계: 분석 체크리스트 */
+
+.setup-checks {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.setup-check {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 64px;
+  padding: 0 26px;
+  border-radius: 10px;
+  background: #f3f4fb;
+  font-size: 15px;
+  font-weight: 600;
+  color: #b3b7c9;
+  transition: color 0.3s;
+}
+
+.setup-check svg {
+  opacity: 0.25;
+  transition: opacity 0.3s;
+}
+
+.setup-check.is-done {
+  color: var(--primary);
+}
+
+.setup-check.is-done svg {
+  opacity: 1;
+}
+
+.setup-retry {
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .setup {
+    min-height: 0;
+  }
+
+  .setup-title {
+    font-size: 26px;
+    white-space: normal;
+    word-break: keep-all;
+  }
+
+  .setup-body {
+    margin-bottom: 24px;
+  }
+}
