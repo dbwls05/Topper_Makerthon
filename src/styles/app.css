@@ -654,6 +654,111 @@
   width: 100%;
 }
 
+/* ---------- 마이페이지 ---------- */
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 0 44px;
+}
+
+.profile-avatar {
+  width: 130px;
+  height: 130px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d3d8ff;
+  color: var(--navy);
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.profile-name {
+  margin-top: 24px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f2229;
+}
+
+.profile-sub {
+  margin-top: 8px;
+  font-size: 15px;
+  color: var(--text-sub);
+}
+
+.mypage-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.edit-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 8px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.edit-button:hover {
+  background: #333b8f;
+}
+
+.profile-grid {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.profile-field-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 115px;
+  padding: 0 24px;
+}
+
+.profile-field-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #eef0ff;
+  color: var(--navy);
+}
+
+.profile-field-label {
+  font-size: 13px;
+  color: #8a8f99;
+}
+
+.profile-field-value {
+  margin-top: 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f2229;
+}
+
+.profile-field-value.is-empty {
+  color: var(--navy);
+}
+
 /* ---------- 반응형 ---------- */
 
 @media (max-width: 1600px) {
@@ -698,6 +803,10 @@
   }
 
   .grant-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -784,6 +893,25 @@
 
   .grant-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header {
+    padding: 8px 0 32px;
+  }
+
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+    font-size: 32px;
+  }
+
+  .mypage-section-head {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .progress-card {

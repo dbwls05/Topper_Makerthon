@@ -93,3 +93,58 @@ export function CalendarIcon() {
     </svg>
   )
 }
+
+export function WalletIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="6.5" width="18" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3 10.5h18" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="16.5" cy="14.5" r="1.4" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function UsersIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3.5 20c.6-3.6 3-5.8 5.5-5.8s4.9 2.2 5.5 5.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="17" cy="9" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M15.5 14.6c1.8.2 3.4 1.8 4 5.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function BriefcaseIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="8" width="18" height="11.5" rx="2.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M8.5 8V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3 13.5h18" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
+
+export function TagIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M11.6 3.5h5.4A1.5 1.5 0 0 1 18.5 5v5.4a1.5 1.5 0 0 1-.44 1.06l-7.2 7.2a1.5 1.5 0 0 1-2.12 0l-5.3-5.3a1.5 1.5 0 0 1 0-2.12l7.2-7.2a1.5 1.5 0 0 1 1.06-.44Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="14.5" cy="8" r="1.3" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function SlidersIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 7h4M12 7h8M4 17h10M18 17h2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="9" cy="7" r="2.3" stroke="currentColor" strokeWidth="1.8" fill="#273071" />
+      <circle cx="15" cy="17" r="2.3" stroke="currentColor" strokeWidth="1.8" fill="#273071" />
+    </svg>
+  )
+}
