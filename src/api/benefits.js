@@ -341,6 +341,36 @@ export async function findGrants({ keyword = '', category = '', sido = '', page 
   return { grants: data.map(toGrant), total: count ?? 0 }
 }
 
+const GRANT_DETAIL_COLUMNS = `${GRANT_COLUMNS}, field, support_type, target, criteria, support_detail, how_to_apply, contact, income_levels, targets`
+
+/** 지원금 상세 (카드를 눌렀을 때 보이는 화면) */
+export async function getGrantById(id) {
+  if (!supabase) {
+    const grant = MOCK_GRANTS.find((item) => item.id === id)
+    return grant ? mockResponse(grant) : null
+  }
+  const { data, error } = await supabase
+    .from('grants')
+    .select(GRANT_DETAIL_COLUMNS)
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  return {
+    ...toGrant(data),
+    field: data.field ?? '',
+    supportType: data.support_type ?? '',
+    target: data.target ?? '',
+    criteria: data.criteria ?? '',
+    supportDetail: data.support_detail ?? '',
+    howToApply: data.how_to_apply ?? '',
+    contact: data.contact ?? '',
+    incomeLevels: data.income_levels ?? [],
+    targets: data.targets ?? [],
+    applyPeriod: data.apply_period ?? '',
+  }
+}
+
 /** 지원금 이름으로 검색 (서류 체크 화면 상단 검색창) */
 export async function searchGrants(keyword) {
   const text = keyword.trim()

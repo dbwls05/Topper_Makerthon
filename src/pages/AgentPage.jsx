@@ -1,6 +1,14 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { askAgent } from '../api/benefits.js'
+import {
+  addChatMessage,
+  createChatSession,
+  deleteChatSession,
+  getChatMessages,
+  listChatSessions,
+  titleFromQuestion,
+} from '../api/chat.js'
 import { ChevronRightIcon } from '../components/icons.jsx'
 import SaveGrantButton from '../components/SaveGrantButton.jsx'
 import orbImage from '../assets/agent/orb.webp'
@@ -77,7 +85,7 @@ function GrantCards({ grants }) {
     <div className="agent-grants">
       {grants.map((grant) => (
         <div key={grant.id} className="agent-grant">
-          <Link to="/search" className="agent-grant-link">
+          <Link to={`/grants/${grant.id}`} className="agent-grant-link">
             <span className="agent-grant-title">{grant.title}</span>
             <span className="agent-grant-benefit">
               {grant.benefit}
@@ -116,6 +124,65 @@ function SendIcon() {
   )
 }
 
+function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+// 왼쪽 대화 목록 — 세션을 고르면 그 대화를 이어서 볼 수 있다
+function SessionList({ sessions, currentId, onSelect, onNew, onDelete, loading }) {
+  return (
+    <div className="agent-sessions-inner">
+      <button type="button" className="agent-new" onClick={onNew}>
+        <PlusIcon />새 대화
+      </button>
+
+      {loading ? (
+        <p className="agent-sessions-empty">불러오는 중...</p>
+      ) : sessions.length === 0 ? (
+        <p className="agent-sessions-empty">아직 대화가 없어요.</p>
+      ) : (
+        <ul className="agent-session-list">
+          {sessions.map((session) => (
+            <li key={session.id}>
+              <button
+                type="button"
+                className={`agent-session${session.id === currentId ? ' is-active' : ''}`}
+                onClick={() => onSelect(session.id)}
+              >
+                <span className="agent-session-title">{session.title}</span>
+                <span className="agent-session-date">
+                  {new Date(session.updated_at).toLocaleDateString('ko-KR', {
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </span>
+              </button>
+              <button
+                type="button"
+                className="agent-session-delete"
+                aria-label={`'${session.title}' 대화 삭제`}
+                onClick={() => onDelete(session.id)}
+              >
+                <TrashIcon />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export default function AgentPage() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -124,12 +191,73 @@ export default function AgentPage() {
   const [image, setImage] = useState(null) // 첨부한 이미지 data URL
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
+  const [sessions, setSessions] = useState([])
+  const [sessionId, setSessionId] = useState(null)
+  const [sessionsLoading, setSessionsLoading] = useState(true)
+  const [panelOpen, setPanelOpen] = useState(false) // 모바일에서 목록 열기
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
   const fileRef = useRef(null)
   const handledPromptRef = useRef(false)
+  const sessionIdRef = useRef(null) // send() 안에서 최신 세션 id 를 쓰기 위해
 
   const started = messages.length > 0
+
+  function setActiveSession(id) {
+    sessionIdRef.current = id
+    setSessionId(id)
+  }
+
+  // 대화 목록 불러오기
+  async function loadSessions() {
+    try {
+      setSessions(await listChatSessions())
+    } catch (err) {
+      console.error('[대화 목록 불러오기 실패]', err)
+    } finally {
+      setSessionsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadSessions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // 목록에서 대화 고르기
+  async function openSession(id) {
+    setPanelOpen(false)
+    if (id === sessionId) return
+    setActiveSession(id)
+    setError('')
+    try {
+      setMessages(await getChatMessages(id))
+    } catch (err) {
+      console.error('[대화 불러오기 실패]', err)
+      setError('대화를 불러오지 못했어요.')
+    }
+  }
+
+  function startNewChat() {
+    setPanelOpen(false)
+    setActiveSession(null)
+    setMessages([])
+    setError('')
+    setInput('')
+    setImage(null)
+    inputRef.current?.focus()
+  }
+
+  async function removeSession(id) {
+    try {
+      await deleteChatSession(id)
+      setSessions((prev) => prev.filter((session) => session.id !== id))
+      if (id === sessionIdRef.current) startNewChat()
+    } catch (err) {
+      console.error('[대화 삭제 실패]', err)
+      setError('대화를 삭제하지 못했어요.')
+    }
+  }
 
   // 새 메시지가 오면 맨 아래로
   useEffect(() => {
@@ -153,6 +281,16 @@ export default function AgentPage() {
         content: body,
         ...(index === next.length - 1 && attachedImage ? { image: attachedImage } : {}),
       }))
+      // 첫 질문이면 대화(세션)를 만들고, 이후 메시지는 여기에 쌓인다
+      let activeId = sessionIdRef.current
+      if (!activeId) {
+        const session = await createChatSession(titleFromQuestion(content || '이미지 질문'))
+        activeId = session.id
+        setActiveSession(activeId)
+        setSessions((prev) => [session, ...prev])
+      }
+      await addChatMessage(activeId, { role: 'user', content, image: attachedImage })
+
       const { reply, grants = [] } = await askAgent(history)
       if (!reply?.trim()) {
         // 서버는 성공했는데 본문이 비어 있는 경우 (빈 말풍선이 뜨지 않게)
@@ -161,6 +299,8 @@ export default function AgentPage() {
         return
       }
       setMessages((prev) => [...prev, { role: 'assistant', content: reply, grants }])
+      await addChatMessage(sessionIdRef.current, { role: 'assistant', content: reply, grants })
+      loadSessions() // 최근 대화 순서 갱신
     } catch (err) {
       setError(err.message)
     } finally {
@@ -208,7 +348,35 @@ export default function AgentPage() {
   }
 
   return (
-    <div className={`agent${started ? ' is-started' : ''}`}>
+    <div className="agent-shell">
+      <aside className={`agent-sessions${panelOpen ? ' is-open' : ''}`}>
+        <SessionList
+          sessions={sessions}
+          currentId={sessionId}
+          loading={sessionsLoading}
+          onSelect={openSession}
+          onNew={startNewChat}
+          onDelete={removeSession}
+        />
+      </aside>
+      {panelOpen && (
+        <button
+          type="button"
+          className="agent-panel-backdrop"
+          aria-label="대화 목록 닫기"
+          onClick={() => setPanelOpen(false)}
+        />
+      )}
+
+      <div className={`agent${started ? ' is-started' : ''}`}>
+        <div className="agent-mobile-bar">
+          <button type="button" className="agent-panel-toggle" onClick={() => setPanelOpen(true)}>
+            대화 목록
+          </button>
+          <button type="button" className="agent-panel-toggle" onClick={startNewChat}>
+            새 대화
+          </button>
+        </div>
       <div className="agent-scroll" ref={scrollRef}>
         <div className="agent-column">
           {!started ? (
@@ -325,6 +493,7 @@ export default function AgentPage() {
             </button>
           </form>
         </div>
+      </div>
       </div>
     </div>
   )

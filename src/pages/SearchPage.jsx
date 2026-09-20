@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { findGrants } from '../api/benefits.js'
 import { CATEGORY_COLORS } from '../components/categoryColors.js'
 import { REGIONS } from '../constants/profileOptions.js'
@@ -33,7 +34,7 @@ function SearchIcon() {
 
 function GrantCard({ grant }) {
   return (
-    <article className="card grant-card">
+    <Link to={`/grants/${grant.id}`} className="card grant-card grant-card--link">
       <div className="grant-card-top">
         <p className="grant-category">
           <span className="dot" style={{ background: CATEGORY_COLORS[grant.category] ?? '#9ca1ab' }} />
@@ -51,17 +52,11 @@ function GrantCard({ grant }) {
           <CalendarIcon /> {formatDDay(grant)}
         </span>
       </p>
-      {grant.applyUrl ? (
-        <a className="grant-benefit" href={grant.applyUrl} target="_blank" rel="noreferrer noopener">
-          <span className="grant-benefit-text">{grant.benefit || '신청 안내 보기'}</span>
-          <ChevronRightIcon color="#9ca1ab" />
-        </a>
-      ) : (
-        <p className="grant-benefit">
-          <span className="grant-benefit-text">{grant.benefit}</span>
-        </p>
-      )}
-    </article>
+      <p className="grant-benefit">
+        <span className="grant-benefit-text">{grant.benefit}</span>
+        <ChevronRightIcon color="#9ca1ab" />
+      </p>
+    </Link>
   )
 }
 
