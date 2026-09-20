@@ -54,7 +54,7 @@ NUDGE는 **"나에게 맞는 지원금이 뭐지?"에서 "신청 완료"까지**
 
 - **프론트엔드**: React 19, React Router 7, Vite
 - **백엔드**: Supabase (Auth, Postgres + RLS, Edge Functions)
-- **AI**:
+- **AI**: OpenAI API (Supabase Edge Function에서 호출)
 - **데이터**: 공공데이터포털 정부24 공공서비스 API
 
 ## 실행 방법
@@ -75,6 +75,18 @@ npm run dev            # http://localhost:5173
 | `SUPABASE_SERVICE_ROLE_KEY` | 동기화 담당자만 | `grants` 쓰기용 키. **RLS를 무시하는 강력한 키라 공유·커밋 금지** |
 
 ⚠️ `VITE_`로 시작하는 값은 브라우저에 그대로 들어갑니다. 비밀 키에는 절대 `VITE_`를 붙이지 마세요. `.env`는 커밋되지 않습니다.
+
+## 빌드 및 미리보기
+
+배포용 파일을 생성하고 로컬에서 결과를 확인할 수 있습니다.
+
+```bash
+npm run build
+npm run preview
+```
+
+빌드 결과는 `dist/`에 생성됩니다. 미리보기 주소는 터미널에 표시되는 URL을 확인하세요.
+코드를 수정했다면 `npm run build`를 다시 실행한 뒤 미리보기를 확인하세요.
 
 ## 프로젝트 구조
 
