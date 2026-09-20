@@ -8,10 +8,13 @@
 //
 // 필요한 Secrets (Dashboard → Edge Functions → Secrets)
 //   OPENAI_API_KEY  (필수)
-//   OPENAI_MODEL    (선택, 기본 gpt-4o-mini — OpenAI 문서에서 현재 모델명을 확인해 바꿔도 된다)
+//   모델은 아래 OPENAI_MODEL 상수로 고정한다.
 // SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY 는 Supabase 가 자동으로 넣어준다.
 
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+// 이 모델만 사용한다
+const OPENAI_MODEL = "gpt-5.6-luna";
 
 const DAILY_LIMIT = 30;
 const MAX_HISTORY = 12;
@@ -71,6 +74,18 @@ function sanitizeMessages(input: unknown): ChatMessage[] {
 }
 
 // OpenAI 형식으로 변환 — 이미지가 있으면 텍스트 + 이미지 파트로 보낸다
+// 모델에 따라 content 가 문자열이거나 파트 배열로 온다
+function readContent(content: unknown): string {
+  if (typeof content === "string") return content.trim();
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => (typeof part === "string" ? part : (part?.text ?? "")))
+      .join("")
+      .trim();
+  }
+  return "";
+}
+
 function toOpenAIMessage(m: ChatMessage) {
   if (!m.image) return { role: m.role, content: m.content };
   return {
@@ -111,9 +126,21 @@ Deno.serve(async (req) => {
   if (req.method !== "POST")
     return json({ error: "지원하지 않는 요청이에요." }, 405);
 
-  const openaiKey = Deno.env.get("OPENAI_API_KEY");
+  // 키 앞뒤 공백/줄바꿈은 흔한 실수라 잘라낸다
+  const openaiKey = Deno.env.get("OPENAI_API_KEY")?.trim();
   if (!openaiKey)
     return json({ error: "서버에 OPENAI_API_KEY 가 설정되지 않았어요." }, 500);
+  // 따옴표·한글·눈에 안 보이는 공백이 섞이면 fetch 가 헤더를 못 만들고 TypeError 로 죽는다
+  if (!/^[!-~]+$/.test(openaiKey)) {
+    console.error("OPENAI_API_KEY 에 쓸 수 없는 문자가 있음 (길이", openaiKey.length, ")");
+    return json(
+      {
+        error:
+          "OPENAI_API_KEY 값에 따옴표·공백·한글 같은 문자가 섞여 있어요. Supabase → Edge Functions → Secrets 에서 키 값만 다시 넣어주세요.",
+      },
+      500,
+    );
+  }
 
   // 1) 로그인 확인 — 사용자 토큰으로 만든 클라이언트라 RLS 가 그대로 적용된다
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -200,31 +227,68 @@ Deno.serve(async (req) => {
     );
 
   // 4) OpenAI 호출
-  const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${openaiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: Deno.env.get("OPENAI_MODEL") ?? "gpt-4o-mini",
-      temperature: 0.4,
-      max_tokens: 800,
-      messages: [
-        { role: "system", content: buildSystemPrompt(profile, grants ?? []) },
-        ...messages.map(toOpenAIMessage),
-      ],
-    }),
-  });
+  // 모델마다 받는 항목이 달라서(max_tokens vs max_completion_tokens, temperature 고정 등)
+  // 400 unsupported_parameter 가 오면 그 항목만 빼거나 바꿔서 다시 보낸다.
+  // gpt-5.6-luna 는 temperature 를 받지 않아 처음부터 넣지 않는다 (다른 모델로 바꾸면 아래 줄을 살리면 된다)
+  const payload: Record<string, unknown> = {
+    model: OPENAI_MODEL,
+    // 추론형 모델은 내부 추론에도 토큰을 쓰므로 넉넉하게 준다
+    max_completion_tokens: 2000,
+    messages: [
+      { role: "system", content: buildSystemPrompt(profile, grants ?? []) },
+      ...messages.map(toOpenAIMessage),
+    ],
+  };
+
+  const callOpenAI = () =>
+    fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+  let openaiRes = await callOpenAI();
+  let detail = openaiRes.ok ? "" : await openaiRes.text();
+
+  for (let retry = 0; !openaiRes.ok && openaiRes.status === 400 && retry < 3; retry += 1) {
+    let parsed: { error?: { code?: string; param?: string; message?: string } } = {};
+    try {
+      parsed = JSON.parse(detail);
+    } catch {
+      break;
+    }
+    const param = parsed.error?.param ?? "";
+    const code = parsed.error?.code ?? "";
+    const fixable =
+      (code === "unsupported_parameter" || code === "unsupported_value") && param in payload;
+    if (!fixable) break;
+
+    if (param === "max_completion_tokens") {
+      // 이 이름을 모르는 예전 모델이면 옛 이름으로 바꿔서 다시
+      delete payload.max_completion_tokens;
+      payload.max_tokens = 800;
+    } else {
+      // temperature 처럼 기본값만 허용하는 항목은 아예 빼고 다시
+      delete payload[param];
+    }
+    console.log(`OpenAI 가 '${param}' 를 받지 않아 조정 후 재시도`);
+    openaiRes = await callOpenAI();
+    detail = openaiRes.ok ? "" : await openaiRes.text();
+  }
 
   if (!openaiRes.ok) {
-    const detail = await openaiRes.text();
     console.error("OpenAI error", openaiRes.status, detail);
 
     // OpenAI 에러 코드로 원인을 구분한다 (429 도 '잔액 없음'과 '요청 과다'는 다르다)
     let code = "";
+    let openaiMessage = "";
     try {
-      code = JSON.parse(detail)?.error?.code ?? "";
+      const parsed = JSON.parse(detail);
+      code = parsed?.error?.code ?? "";
+      openaiMessage = parsed?.error?.message ?? "";
     } catch {
       // 본문이 JSON 이 아니면 상태 코드로만 판단
     }
@@ -238,17 +302,38 @@ Deno.serve(async (req) => {
       code === "insufficient_quota"
         ? "OpenAI 계정에 크레딧(잔액)이 없어요. platform.openai.com → Billing 에서 크레딧을 충전해 주세요."
         : code === "model_not_found"
-          ? "설정한 OpenAI 모델을 쓸 수 없어요. OPENAI_MODEL 값을 확인해 주세요."
+          ? `OpenAI 에서 '${OPENAI_MODEL}' 모델을 쓸 수 없어요. 모델 이름이 맞는지, 계정에 접근 권한이 있는지 확인해 주세요.`
           : openaiRes.status === 401
             ? "OpenAI API 키가 올바르지 않아요."
             : openaiRes.status === 429
               ? "OpenAI 요청이 너무 많아요. 잠시 후 다시 시도해 주세요."
-              : `AI 응답을 받지 못했어요. (OpenAI ${openaiRes.status}${code ? ` ${code}` : ""})`;
+              : `AI 응답을 받지 못했어요. (OpenAI ${openaiRes.status}${code ? ` ${code}` : ""}${openaiMessage ? `: ${openaiMessage}` : ""})`;
     return json({ error: message, code }, 502);
   }
 
   const completion = await openaiRes.json();
-  const reply = completion.choices?.[0]?.message?.content?.trim() ?? "";
+  const choice = completion.choices?.[0];
+  const reply = readContent(choice?.message?.content);
+
+  if (!reply) {
+    // 추론형 모델은 토큰이 모자라면 본문 없이 돌아온다 (finish_reason: 'length')
+    console.error(
+      "OpenAI 응답에 본문이 없음",
+      JSON.stringify({ finish_reason: choice?.finish_reason, usage: completion.usage }),
+    );
+    await admin
+      .from("ai_usage")
+      .upsert({ user_id: user.id, day: today(), count: used });
+    return json(
+      {
+        error:
+          choice?.finish_reason === "length"
+            ? "답변이 길어서 중간에 끊겼어요. 질문을 조금 더 짧게 해보시겠어요?"
+            : "AI 가 빈 답변을 보냈어요. 잠시 후 다시 시도해 주세요.",
+      },
+      502,
+    );
+  }
 
   // 답변에 이름이 나온 지원금은 화면에서 카드로 보여준다
   const mentioned = (grants ?? [])

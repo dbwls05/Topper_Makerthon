@@ -4,6 +4,7 @@ dist/
 .env
 .env.local
 .env.*.local
+supabase/secrets.env
 
 *.local
 .DS_Store
