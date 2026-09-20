@@ -44,7 +44,7 @@ export const MOCK_SAVED = [
   { grantId: 'youth-job', status: 'preparing', checkedDocuments: ['주민등록등본', '신분증 사본'] },
 ]
 
-export const MOCK_PROGRESS = { preparing: 1, total: MOCK_GRANTS.length }
+export const MOCK_PROGRESS = { preparing: 1, total: MOCK_SAVED.length }
 
 export const MOCK_NOTIFICATIONS = [
   {

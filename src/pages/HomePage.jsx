@@ -1,27 +1,40 @@
-import { Link } from 'react-router-dom'
-import { useCurrentUser } from '../lib/UserContext.jsx'
-import { getPreparationProgress, getRecommendedGrants, isUrgent } from '../api/benefits.js'
-import { useApi } from '../hooks/useApi.js'
-import { CATEGORY_COLORS } from '../components/categoryColors.js'
-import SaveGrantButton from '../components/SaveGrantButton.jsx'
-import { ArrowRightIcon, CalendarIcon, ChevronRightIcon, PinIcon } from '../components/icons.jsx'
-import heroBg from '../assets/hero-bg.png'
-import robotHero from '../assets/robot-hero.png'
-import robotProfile from '../assets/robot-profile.png'
+import { Link } from "react-router-dom";
+import { useCurrentUser } from "../lib/UserContext.jsx";
+import {
+  getPreparationProgress,
+  getRecommendedGrants,
+  isUrgent,
+} from "../api/benefits.js";
+import { useApi } from "../hooks/useApi.js";
+import { CATEGORY_COLORS } from "../components/categoryColors.js";
+import SaveGrantButton from "../components/SaveGrantButton.jsx";
+import {
+  ArrowRightIcon,
+  CalendarIcon,
+  ChevronRightIcon,
+  PinIcon,
+} from "../components/icons.jsx";
+import heroBg from "../assets/hero-bg.png";
+import robotHero from "../assets/robot-hero.png";
+import robotProfile from "../assets/robot-profile.png";
 
-const GRID_SIZE = 3
+const GRID_SIZE = 3;
 
 // 상시 모집(마감일 없음)은 D-day 대신 '상시'
 function formatDDay(grant) {
-  if (grant.dDay === null) return grant.periodLabel ?? '상시'
-  return grant.dDay === 0 ? 'D-Day' : `D-${grant.dDay}`
+  if (grant.dDay === null) return grant.periodLabel ?? "상시";
+  return grant.dDay === 0 ? "D-Day" : `D-${grant.dDay}`;
 }
 
 // 예: "MONDAY · SEPTEMBER 19"
 function formatToday(date) {
-  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
-  const month = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase()
-  return `${weekday} · ${month} ${date.getDate()}`
+  const weekday = date
+    .toLocaleDateString("en-US", { weekday: "long" })
+    .toUpperCase();
+  const month = date
+    .toLocaleDateString("en-US", { month: "long" })
+    .toUpperCase();
+  return `${weekday} · ${month} ${date.getDate()}`;
 }
 
 function DeadlineCard({ grants }) {
@@ -34,12 +47,14 @@ function DeadlineCard({ grants }) {
       ) : (
         <ul className="deadline-list">
           {grants.map((grant) => {
-            const deadline = new Date(grant.deadline)
+            const deadline = new Date(grant.deadline);
             return (
               <li key={grant.id} className="deadline-item">
                 <span className="date-badge">
                   <strong>{deadline.getDate()}</strong>
-                  {deadline.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+                  {deadline
+                    .toLocaleDateString("en-US", { month: "short" })
+                    .toUpperCase()}
                 </span>
                 <div className="deadline-info">
                   <p className="deadline-name">{grant.title}</p>
@@ -49,20 +64,26 @@ function DeadlineCard({ grants }) {
                 </div>
                 <span className="deadline-dday">{formatDDay(grant)}</span>
               </li>
-            )
+            );
           })}
         </ul>
       )}
     </section>
-  )
+  );
 }
 
 function GrantCard({ grant }) {
   return (
-    <Link to={`/grants/${grant.id}`} className="card grant-card grant-card--link">
+    <Link
+      to={`/grants/${grant.id}`}
+      className="card grant-card grant-card--link"
+    >
       <div className="grant-card-top">
         <p className="grant-category">
-          <span className="dot" style={{ background: CATEGORY_COLORS[grant.category] }} />
+          <span
+            className="dot"
+            style={{ background: CATEGORY_COLORS[grant.category] }}
+          />
           {grant.category}
         </p>
         <SaveGrantButton grantId={grant.id} />
@@ -82,14 +103,14 @@ function GrantCard({ grant }) {
         <ChevronRightIcon color="#9ca1ab" />
       </p>
     </Link>
-  )
+  );
 }
 
 // 12시 방향에서 시계 반대 방향으로 채워지는 도넛 차트
 function ProgressRing({ done, total }) {
-  const radius = 88
-  const circumference = 2 * Math.PI * radius
-  const ratio = total === 0 ? 0 : done / total
+  const radius = 88;
+  const circumference = 2 * Math.PI * radius;
+  const ratio = total === 0 ? 0 : done / total;
 
   return (
     <div className="progress-ring">
@@ -100,7 +121,14 @@ function ProgressRing({ done, total }) {
             <stop offset="100%" stopColor="#3aa8f0" />
           </linearGradient>
         </defs>
-        <circle cx="120" cy="120" r={radius} fill="none" stroke="#eef7fe" strokeWidth="30" />
+        <circle
+          cx="120"
+          cy="120"
+          r={radius}
+          fill="none"
+          stroke="#eef7fe"
+          strokeWidth="30"
+        />
         <circle
           cx="120"
           cy="120"
@@ -126,14 +154,17 @@ function ProgressRing({ done, total }) {
         {done}/{total}
       </span>
     </div>
-  )
+  );
 }
 
 export default function HomePage() {
-  const { givenName } = useCurrentUser()
-  const { data: grants } = useApi(getRecommendedGrants, [])
-  const { data: progress } = useApi(getPreparationProgress, { preparing: 0, total: 0 })
-  const urgentGrants = grants.filter(isUrgent)
+  const { givenName } = useCurrentUser();
+  const { data: grants } = useApi(getRecommendedGrants, []);
+  const { data: progress } = useApi(getPreparationProgress, {
+    preparing: 0,
+    total: 0,
+  });
+  const urgentGrants = grants.filter(isUrgent);
 
   return (
     <div className="home">
@@ -181,11 +212,19 @@ export default function HomePage() {
           <div>
             <p className="card-eyebrow">MY PROGRESS</p>
             <h2 className="card-title">신청 준비 현황</h2>
-            <p className="progress-summary">
-              맞춤 지원금 {progress.total}개중
-              <br />
-              <strong>{progress.preparing}개</strong>를 준비 중이에요
-            </p>
+            {progress.total === 0 ? (
+              <p className="progress-summary">
+                아직 담은 지원금이 없어요
+                <br />
+                지원금 카드의 <strong>담기</strong>부터 시작해보세요
+              </p>
+            ) : (
+              <p className="progress-summary">
+                담은 지원금 {progress.total}개중
+                <br />
+                <strong>{progress.preparing}개</strong>를 준비 중이에요
+              </p>
+            )}
             <p className="progress-hint">가장 가까운 마감부터 챙겨볼까요?</p>
           </div>
           <ProgressRing done={progress.preparing} total={progress.total} />
@@ -207,5 +246,5 @@ export default function HomePage() {
         </Link>
       </div>
     </div>
-  )
+  );
 }

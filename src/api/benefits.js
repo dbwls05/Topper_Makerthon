@@ -131,20 +131,17 @@ export async function getRecommendedGrants() {
     .map(toGrant)
 }
 
-/** 신청 준비 현황 { preparing, total } */
+/** 신청 준비 현황 { preparing, total } — 내가 담은 지원금 기준 (preparing: status가 'preparing') */
 export async function getPreparationProgress() {
   const userId = await currentUserId()
   if (!userId) return mockResponse(MOCK_PROGRESS)
 
-  const [grants, { count, error }] = await Promise.all([
-    getRecommendedGrants(),
-    supabase
-      .from('user_grants')
-      .select('grant_id', { count: 'exact', head: true })
-      .in('status', ['preparing', 'applied']),
-  ])
+  const { data, error } = await supabase.from('user_grants').select('status')
   if (error) throw error
-  return { preparing: count ?? 0, total: grants.length }
+  return {
+    preparing: data.filter((row) => row.status === 'preparing').length,
+    total: data.length,
+  }
 }
 
 /** 마감 임박 여부 (상시 모집 제외) */
