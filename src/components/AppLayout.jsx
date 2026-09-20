@@ -36,6 +36,22 @@ function Sidebar() {
   )
 }
 
+// 모바일 하단 탭바 (데스크톱에서는 사이드바가 대신 보인다)
+function MobileTabBar() {
+  return (
+    <nav className="tabbar" aria-label="모바일 메뉴">
+      {ALL_NAV.map(({ to, label, Icon }) => (
+        <NavLink key={to} to={to} className={({ isActive }) => `tabbar-item${isActive ? ' is-active' : ''}`}>
+          <span className="tabbar-icon">
+            <Icon />
+          </span>
+          {label}
+        </NavLink>
+      ))}
+    </nav>
+  )
+}
+
 function Topbar() {
   const { pathname } = useLocation()
   const { name } = useCurrentUser()
@@ -43,6 +59,10 @@ function Topbar() {
 
   return (
     <header className="topbar">
+      {/* 모바일에서는 경로 대신 로고 */}
+      <NavLink to="/home" className="topbar-logo" aria-label="NUDGE 홈">
+        <img src="/logo.svg" alt="nudge" width="72" height="25" />
+      </NavLink>
       <p className="breadcrumb">
         <span>나의 workspace</span>
         <ChevronRightIcon size={14} />
@@ -51,7 +71,7 @@ function Topbar() {
       <div className="topbar-right">
         <NotificationMenu />
         <NavLink to="/mypage" className="profile-chip">
-          {name}
+          <span className="profile-chip-name">{name}</span>
           <span className="avatar">{name.slice(0, 1)}</span>
         </NavLink>
       </div>
@@ -75,6 +95,7 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <MobileTabBar />
     </div>
   )
 }

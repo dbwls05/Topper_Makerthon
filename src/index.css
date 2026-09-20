@@ -432,11 +432,13 @@ body {
     position: static;
     flex: none;
     max-width: none;
-    height: 280px;
+    /* 세로로 긴 그림이라 너무 낮으면 로봇이 잘린다 (그림 비율 691×1080) */
+    height: min(380px, 50vh);
   }
 
   .signup-visual img {
-    object-position: center 45%;
+    /* 아래쪽(로봇)을 기준으로 맞춰 머리가 잘리지 않게 */
+    object-position: center bottom;
   }
 
   .signup-content {

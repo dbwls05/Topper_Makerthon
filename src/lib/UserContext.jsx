@@ -2,15 +2,15 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
 import { refreshSavedGrants } from './savedGrants.js'
 
-// TODO: 로그인 기능이 붙으면 이 임시 이름은 지워도 된다.
-// 로그인한 사용자가 있으면 회원가입 때 저장한 user_metadata.name 을 대신 쓴다.
-export const TEMP_USER_NAME = '조은지'
+// Supabase 미설정(데모 모드)일 때만 쓰는 이름. 로그인하면 회원가입 때 저장한 이름을 쓴다.
+const DEMO_USER_NAME = '게스트'
 
 const UserContext = createContext({
-  name: TEMP_USER_NAME,
-  givenName: toGivenName(TEMP_USER_NAME),
+  name: DEMO_USER_NAME,
+  givenName: DEMO_USER_NAME,
   email: '',
   isLoggedIn: false,
+  loading: true,
   signOut: async () => {},
 })
 
@@ -20,16 +20,21 @@ export function toGivenName(name) {
 }
 
 function nameFromUser(user) {
-  return user?.user_metadata?.name?.trim() || TEMP_USER_NAME
+  return user?.user_metadata?.name?.trim() || DEMO_USER_NAME
 }
 
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null)
+  // 새로고침 직후에는 로그인 여부를 아직 모른다. 확인이 끝나기 전에 화면을 보내지 않으려고 쓴다.
+  const [loading, setLoading] = useState(Boolean(supabase))
 
   useEffect(() => {
     if (!supabase) return undefined
 
-    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null))
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ?? null)
+      setLoading(false)
+    })
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
@@ -43,11 +48,15 @@ export function UserProvider({ children }) {
   }, [userId])
 
   const name = nameFromUser(user)
+  // 데모 이름('게스트')은 성이 아니므로 로그인한 사용자 이름에만 성을 뗀다
   const value = {
     name,
-    givenName: toGivenName(name),
+    givenName: user ? toGivenName(name) : name,
     email: user?.email ?? '',
     isLoggedIn: Boolean(user),
+    loading,
+    // Supabase 미설정(데모 모드)에서는 로그인 없이도 화면을 볼 수 있게 한다
+    demoMode: !supabase,
     signOut: async () => {
       if (supabase) await supabase.auth.signOut()
     },

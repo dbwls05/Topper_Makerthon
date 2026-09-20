@@ -444,7 +444,8 @@
 
 @media (max-width: 860px) {
   .agent {
-    height: calc(100vh - 64px - 64px);
+    /* 상단바 56 + 하단 탭바 (약 72 + 안전영역) */
+    height: calc(100vh - 56px - 72px - env(safe-area-inset-bottom));
   }
 
   .agent-scroll,
@@ -503,6 +504,6 @@
   }
 
   .agent-grants {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

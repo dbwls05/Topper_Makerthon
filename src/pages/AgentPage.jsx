@@ -154,6 +154,12 @@ export default function AgentPage() {
         ...(index === next.length - 1 && attachedImage ? { image: attachedImage } : {}),
       }))
       const { reply, grants = [] } = await askAgent(history)
+      if (!reply?.trim()) {
+        // 서버는 성공했는데 본문이 비어 있는 경우 (빈 말풍선이 뜨지 않게)
+        console.error('[AI Agent] 빈 답변', { reply, grants })
+        setError('AI 가 빈 답변을 보냈어요. 잠시 후 다시 시도해 주세요.')
+        return
+      }
       setMessages((prev) => [...prev, { role: 'assistant', content: reply, grants }])
     } catch (err) {
       setError(err.message)

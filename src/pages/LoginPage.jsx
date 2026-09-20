@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordInput from '../components/PasswordInput.jsx'
@@ -21,6 +21,9 @@ function toFriendlyError(error) {
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  // 로그인하라고 내보내진 경우 원래 가려던 주소로 돌아간다
+  const next = location.state?.from ?? '/home'
   const [form, setForm] = useState(INITIAL_FORM)
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -47,7 +50,7 @@ export default function LoginPage() {
       if (!supabase) {
         // Supabase 미설정 시 데모 모드: 확인 없이 메인으로 보낸다
         await new Promise((resolve) => setTimeout(resolve, 400))
-        navigate('/home', { replace: true })
+        navigate(next, { replace: true })
         return
       }
 
@@ -61,7 +64,7 @@ export default function LoginPage() {
         return
       }
 
-      navigate('/home', { replace: true })
+      navigate(next, { replace: true })
     } catch {
       setFormError('네트워크 문제로 로그인에 실패했어요. 인터넷 연결을 확인해 주세요.')
     } finally {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import AuthLayout from "../components/AuthLayout.jsx";
 import PasswordInput from "../components/PasswordInput.jsx";
@@ -114,6 +114,9 @@ export default function SignupPage() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  // 로그인하라고 내보내진 경우 가입 후 원래 가려던 주소로 간다
+  const next = location.state?.from ?? "/home";
 
   function updateField(key) {
     return (event) => {
@@ -142,7 +145,7 @@ export default function SignupPage() {
       if (!supabase) {
         // Supabase 미설정 시 데모 모드: 저장 없이 성공 화면까지만 흐름을 보여준다
         await new Promise((resolve) => setTimeout(resolve, 600));
-        navigate("/home", { replace: true });
+        navigate(next, { replace: true });
         return;
       }
 
@@ -165,7 +168,7 @@ export default function SignupPage() {
 
       // 이메일 인증을 꺼두면 가입과 동시에 session이 발급된다 → 바로 로그인 상태로 메인으로 보낸다
       if (data.session) {
-        navigate("/home", { replace: true });
+        navigate(next, { replace: true });
         return;
       }
 
