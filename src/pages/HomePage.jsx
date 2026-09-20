@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../lib/UserContext.jsx";
 import {
+  EMPTY_PROFILE,
+  getMyProfile,
   getPreparationProgress,
   getRecommendedGrants,
   isUrgent,
@@ -164,6 +166,11 @@ export default function HomePage() {
     preparing: 0,
     total: 0,
   });
+  // 추천은 프로필 조건(지역·나이·관심 분야)이 없으면 인기순으로 폴백된다. 제목도 그에 맞게 바꾼다.
+  const { data: profile } = useApi(getMyProfile, EMPTY_PROFILE);
+  const hasProfileInfo = Boolean(
+    profile.region || profile.birthYear || profile.interests.length > 0
+  );
   const urgentGrants = grants.filter(isUrgent);
 
   return (
@@ -199,7 +206,11 @@ export default function HomePage() {
       </div>
 
       <section className="home-section">
-        <h2 className="section-title">{givenName}님이 신청 가능한 지원금</h2>
+        <h2 className="section-title">
+          {hasProfileInfo
+            ? `${givenName}님이 신청 가능한 지원금`
+            : "지금 인기 있는 지원금"}
+        </h2>
         <div className="grant-grid">
           {grants.slice(0, GRID_SIZE).map((grant) => (
             <GrantCard key={grant.id} grant={grant} />
