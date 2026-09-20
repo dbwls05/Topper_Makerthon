@@ -13,8 +13,9 @@ import '../styles/documents.css'
 //   /documents/:grantId 선택한 혜택의 필요 서류 체크리스트 (시안: 서류체크.svg)
 // 오른쪽 "NUDGE 에게 물어보세요" 패널은 질문을 AI Agent 화면으로 넘긴다.
 
-function formatDeadline(dDay) {
-  if (dDay === null) return '상시 모집'
+function formatDeadline(grant) {
+  const { dDay } = grant
+  if (dDay === null) return grant.periodLabel === '공고 확인' ? '기한은 공고 확인' : '상시 모집'
   if (dDay < 0) return '마감'
   return dDay === 0 ? '오늘 마감' : `마감 D-${dDay}`
 }
@@ -120,7 +121,7 @@ function GrantSearch({ onPick }) {
                 <button type="button" onClick={() => pick(grant)}>
                   <span className="docs-search-title">{grant.title}</span>
                   <span className="docs-search-meta">
-                    {grant.category} · {formatDeadline(grant.dDay)}
+                    {grant.category} · {formatDeadline(grant)}
                   </span>
                   <span className="docs-search-action">
                     {savedIds.has(grant.id) ? '서류 보기' : '담고 서류 보기'}
@@ -206,7 +207,7 @@ function SavedGrantList({ grants }) {
               <span className="docs-saved-top">
                 <span className="docs-saved-category">
                   <span className="dot" style={{ background: CATEGORY_COLORS[grant.category] ?? '#9ca1ab' }} />
-                  {grant.category} · {formatDeadline(grant.dDay)}
+                  {grant.category} · {formatDeadline(grant)}
                 </span>
                 <SaveGrantButton grantId={grant.id} />
               </span>
@@ -237,7 +238,7 @@ function DocumentChecklist({ grant, onToggle, onAsk }) {
           <ChevronRightIcon size={14} />
         </Link>
         <p className="docs-grant-eyebrow">
-          {status} · {formatDeadline(grant.dDay)}
+          {status} · {formatDeadline(grant)}
         </p>
         <h1 className="docs-grant-title">{grant.title}</h1>
         <p className="docs-grant-sub">신청에 필요한 서류 {grant.documents.length}개</p>

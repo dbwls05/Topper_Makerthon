@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:gov24": "node --env-file=.env scripts/sync-gov24.mjs",
+    "sync:gov24:dry": "node --env-file=.env scripts/sync-gov24.mjs --dry-run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

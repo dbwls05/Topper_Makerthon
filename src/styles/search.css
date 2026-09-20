@@ -1,0 +1,184 @@
+/* ---------- 지원금 찾기 ---------- */
+
+/* 시안 기준(1920): 검색창 → 필터 칩 → 3열 카드 */
+.search-page {
+  padding-left: 20px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  height: 70px;
+  padding: 0 32px;
+  border-radius: 35px;
+  background: #fff;
+}
+
+.search-bar-icon {
+  display: flex;
+  color: #6b7080;
+}
+
+.search-bar input {
+  flex: 1;
+  height: 100%;
+  margin-left: 14px;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: 16px;
+  color: #1f2229;
+}
+
+.search-bar input::placeholder {
+  color: #a3a8b3;
+}
+
+.search-bar:focus-within {
+  box-shadow: 0 0 0 2px #d9ddff;
+}
+
+.search-chips {
+  margin-top: 42px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.search-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 999px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  color: #4b4f58;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.search-chip:hover {
+  background: #eef0fb;
+}
+
+.search-chip.is-on {
+  background: var(--navy);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* '지역' 칩은 같은 모양의 선택 상자 */
+.search-chip--region {
+  padding: 0;
+}
+
+.search-chip--region select {
+  height: 100%;
+  padding: 0 22px;
+  border: none;
+  border-radius: inherit;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.search-chip--region:focus-within {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+.search-status {
+  margin-top: 51px;
+  font-size: 14px;
+  color: #9ca1ab;
+}
+
+.search-grid {
+  margin-top: 51px;
+}
+
+.search-empty {
+  margin-top: 51px;
+  padding: 72px 24px;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+  font-size: 15px;
+  color: #8a8f99;
+}
+
+.search-more {
+  display: block;
+  width: 240px;
+  height: 52px;
+  margin: 32px auto 0;
+  border: 1px solid #d9ddee;
+  border-radius: 26px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.search-more:hover:not(:disabled) {
+  background: #f2f4ff;
+}
+
+.search-more:disabled {
+  color: #9ca1ab;
+  cursor: progress;
+}
+
+/* 화면에는 안 보이고 스크린리더만 읽는 라벨 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 1400px) {
+  .search-page {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .search-bar {
+    height: 56px;
+    padding: 0 20px;
+  }
+
+  .search-chips {
+    margin-top: 24px;
+    gap: 8px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .search-chip {
+    flex-shrink: 0;
+    padding: 0 16px;
+  }
+
+  .search-grid,
+  .search-status,
+  .search-empty {
+    margin-top: 24px;
+  }
+}
