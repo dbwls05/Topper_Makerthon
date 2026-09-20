@@ -553,6 +553,17 @@
   padding: 26px 24px 0;
 }
 
+/* 카드 전체가 상세로 가는 링크 */
+.grant-card--link {
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow 0.15s;
+}
+
+.grant-card--link:hover {
+  box-shadow: 0 10px 24px rgba(39, 48, 113, 0.08);
+}
+
 .grant-card-top {
   display: flex;
   align-items: center;
@@ -636,8 +647,8 @@
   text-decoration: none;
 }
 
-.grant-benefit:hover {
-  text-decoration: underline;
+.grant-card--link:hover .grant-benefit {
+  color: #1f2459;
 }
 
 .home-bottom {

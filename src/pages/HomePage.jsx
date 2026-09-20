@@ -59,7 +59,7 @@ function DeadlineCard({ grants }) {
 
 function GrantCard({ grant }) {
   return (
-    <article className="card grant-card">
+    <Link to={`/grants/${grant.id}`} className="card grant-card grant-card--link">
       <div className="grant-card-top">
         <p className="grant-category">
           <span className="dot" style={{ background: CATEGORY_COLORS[grant.category] }} />
@@ -77,11 +77,11 @@ function GrantCard({ grant }) {
           <CalendarIcon /> {formatDDay(grant)}
         </span>
       </p>
-      <Link to="/search" className="grant-benefit">
+      <p className="grant-benefit">
         <span className="grant-benefit-text">{grant.benefit}</span>
         <ChevronRightIcon color="#9ca1ab" />
-      </Link>
-    </article>
+      </p>
+    </Link>
   )
 }
 

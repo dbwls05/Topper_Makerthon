@@ -1,0 +1,235 @@
+/* ---------- 지원금 상세 ---------- */
+
+.detail {
+  max-width: 900px;
+}
+
+.detail-status {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  font-size: 15px;
+  color: #7c818c;
+}
+
+.detail-back {
+  margin-bottom: 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: #6b7080;
+  cursor: pointer;
+}
+
+.detail-back:hover {
+  color: var(--navy);
+}
+
+.detail-head {
+  padding: 32px;
+}
+
+.detail-category {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8a8f99;
+}
+
+.detail-field {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f2f4ff;
+  color: var(--navy);
+  font-size: 12px;
+}
+
+.detail-title {
+  margin-top: 14px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #1f2229;
+  word-break: keep-all;
+}
+
+.detail-desc {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #6b7080;
+  word-break: keep-all;
+}
+
+.detail-meta {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.detail-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef0f6;
+  font-size: 13px;
+  color: #4b4f58;
+}
+
+.detail-actions {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.detail-apply {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 56px;
+  padding: 0 28px;
+  border-radius: 14px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.detail-apply:hover {
+  background: #1f2459;
+}
+
+.detail-apply--off {
+  background: #eef0f6;
+  color: #8a8f99;
+  font-weight: 500;
+}
+
+.detail-apply--ghost {
+  background: #fff;
+  border: 1px solid #d9ddee;
+  color: var(--navy);
+}
+
+.detail-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #6b7080;
+}
+
+.detail-body {
+  margin-top: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.detail-section {
+  padding: 28px 32px;
+  border-radius: 24px;
+  background: #fff;
+}
+
+.detail-section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1f2229;
+}
+
+.detail-section-body {
+  margin-top: 14px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #4b4f58;
+  /* 정부24 원문의 줄바꿈을 살린다 */
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.detail-docs {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.detail-docs li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.detail-docs li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--navy);
+}
+
+.detail-docs-link {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+  text-decoration: none;
+}
+
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+
+.detail-tags li {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #f2f4ff;
+  font-size: 14px;
+  color: var(--navy);
+}
+
+.detail-note {
+  margin-top: 24px;
+  font-size: 13px;
+  color: #9ca1ab;
+  word-break: keep-all;
+}
+
+@media (max-width: 860px) {
+  .detail-head,
+  .detail-section {
+    padding: 22px 18px;
+  }
+
+  .detail-title {
+    font-size: 22px;
+  }
+
+  .detail-apply {
+    width: 100%;
+    justify-content: center;
+    height: 52px;
+  }
+}

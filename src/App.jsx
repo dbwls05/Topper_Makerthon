@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage.jsx'
 import SearchPage from './pages/SearchPage.jsx'
 import AgentPage from './pages/AgentPage.jsx'
 import DocumentsPage from './pages/DocumentsPage.jsx'
+import GrantDetailPage from './pages/GrantDetailPage.jsx'
 import MyPage from './pages/MyPage.jsx'
 import ProfileSetupPage from './pages/ProfileSetupPage.jsx'
 
@@ -27,6 +28,7 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/grants/:grantId" element={<GrantDetailPage />} />
             <Route path="/agent" element={<AgentPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
             <Route path="/documents/:grantId" element={<DocumentsPage />} />

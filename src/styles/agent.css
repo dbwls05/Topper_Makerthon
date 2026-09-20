@@ -2,10 +2,134 @@
    가운데 840px 열 하나에 대화 → 하단에 입력창 고정.
    첫 화면: 오브 + 인사말, 입력창 위에 바로가기 카드 3개. */
 
-.agent {
-  /* 대화가 길어져도 페이지는 화면 높이에 고정되고, 대화 영역만 스크롤된다 */
+/* 왼쪽 대화 목록 + 오른쪽 채팅 */
+.agent-shell {
   flex: none;
   height: calc(100vh - 95px);
+  display: flex;
+}
+
+.agent-sessions {
+  flex: 0 0 260px;
+  border-right: 1px solid #eceef5;
+  background: #fbfbff;
+  overflow-y: auto;
+}
+
+.agent-sessions-inner {
+  padding: 20px 14px;
+}
+
+.agent-new {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  border: 1px solid #dfe2f0;
+  border-radius: 12px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+  cursor: pointer;
+}
+
+.agent-new:hover {
+  background: #f2f4ff;
+}
+
+.agent-sessions-empty {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca1ab;
+}
+
+.agent-session-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 4px;
+  list-style: none;
+}
+
+.agent-session-list li {
+  position: relative;
+}
+
+.agent-session {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 10px 34px 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-session:hover {
+  background: #f0f2fb;
+}
+
+.agent-session.is-active {
+  background: #e9ecfb;
+}
+
+.agent-session-title {
+  font-size: 14px;
+  color: #2a2d36;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-session.is-active .agent-session-title {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.agent-session-date {
+  font-size: 12px;
+  color: #9ca1ab;
+}
+
+.agent-session-delete {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  display: none;
+  padding: 4px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #9ca1ab;
+  cursor: pointer;
+}
+
+.agent-session-list li:hover .agent-session-delete,
+.agent-session-delete:focus-visible {
+  display: block;
+}
+
+.agent-session-delete:hover {
+  color: var(--danger);
+}
+
+.agent-panel-backdrop,
+.agent-mobile-bar {
+  display: none;
+}
+
+.agent {
+  /* 대화가 길어져도 페이지는 화면 높이에 고정되고, 대화 영역만 스크롤된다 */
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -443,9 +567,53 @@
 }
 
 @media (max-width: 860px) {
-  .agent {
+  .agent-shell {
     /* 상단바 56 + 하단 탭바 (약 72 + 안전영역) */
     height: calc(100vh - 56px - 72px - env(safe-area-inset-bottom));
+  }
+
+  /* 대화 목록은 평소엔 숨기고 버튼으로 연다 */
+  .agent-sessions {
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 25;
+    width: 270px;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 4px 0 20px rgba(38, 44, 108, 0.12);
+  }
+
+  .agent-sessions.is-open {
+    transform: translateX(0);
+  }
+
+  .agent-panel-backdrop {
+    display: block;
+    position: fixed;
+    inset: 56px 0 0;
+    z-index: 24;
+    border: none;
+    background: rgba(17, 20, 40, 0.35);
+  }
+
+  .agent-mobile-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px 0;
+  }
+
+  .agent-panel-toggle {
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid #dfe2f0;
+    border-radius: 999px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    color: #4b4f58;
+    cursor: pointer;
   }
 
   .agent-scroll,
