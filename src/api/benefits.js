@@ -13,6 +13,7 @@ import {
 const MOCK_DELAY_MS = 200
 const URGENT_DAYS = 7
 const RECOMMEND_LIMIT = 12
+const URGENT_LOOKAHEAD_DAYS = 14
 
 function mockResponse(data) {
   return new Promise((resolve) => setTimeout(() => resolve(structuredClone(data)), MOCK_DELAY_MS))
@@ -32,7 +33,19 @@ function daysUntil(deadline) {
 }
 
 const GRANT_COLUMNS =
-  'id, category, title, description, agency, region, deadline, benefit, apply_url, documents'
+  'id, category, title, description, agency, region, region_sido, deadline, apply_period, benefit, apply_url, documents, age_min, age_max'
+
+// 정부24 데이터에서 합쳐진 지역명 — 프로필의 옛 이름으로도 찾을 수 있게
+const MERGED_SIDO = {
+  광주광역시: '전남광주통합특별시',
+  전라남도: '전남광주통합특별시',
+}
+
+// 마감일이 없는 사업은 신청기한 글(상시신청, 접수기관 별 상이 …)로 표시
+function periodLabel(applyPeriod) {
+  if (!applyPeriod || /상시|연중|수시/.test(applyPeriod)) return '상시'
+  return '공고 확인'
+}
 
 // DB grants 행 → 화면용
 function toGrant(row) {
@@ -45,31 +58,77 @@ function toGrant(row) {
     region: row.region,
     deadline: row.deadline,
     dDay: daysUntil(row.deadline),
+    periodLabel: periodLabel(row.apply_period),
     benefit: row.benefit ?? '',
     applyUrl: row.apply_url,
     documents: row.documents ?? [],
   }
 }
 
-/** 사용자에게 추천하는 혜택 목록 (마감 임박 순, 상시 모집은 뒤로) */
+function ageFromBirthYear(birthYear) {
+  return birthYear ? new Date().getFullYear() - birthYear : null
+}
+
+/**
+ * 추천 조건: 신청 가능(마감 전) + 전국/내 지역 + 내 나이 + 관심 분야
+ * PostgREST 에서 or 필터를 여러 번 쓰면 서로 덮어쓸 수 있어서 하나의 and(...) 로 묶는다.
+ */
+function recommendFilter(profile) {
+  const conditions = [`or(deadline.is.null,deadline.gte.${todayString()})`]
+
+  if (profile.region) {
+    const sidos = [profile.region, MERGED_SIDO[profile.region]].filter(Boolean)
+    conditions.push(`or(region_sido.is.null,region_sido.in.(${sidos.join(',')}))`)
+  }
+
+  const age = ageFromBirthYear(profile.birthYear)
+  if (age !== null) {
+    conditions.push(`or(age_min.is.null,age_min.lte.${age})`, `or(age_max.is.null,age_max.gte.${age})`)
+  }
+
+  return `and(${conditions.join(',')})`
+}
+
+/**
+ * 사용자에게 추천하는 혜택 목록
+ * - 앞쪽: 조건에 맞는 것 중 정부24 조회수(인기) 순 → 홈 카드
+ * - 뒤쪽: 14일 안에 마감되는 것 → 홈의 "놓치면 아쉬운 지원"
+ *   (마감순으로만 정렬하면 에너지 설비 지원 같은 관련 적은 사업이 앞에 와서 둘로 나눈다)
+ */
 export async function getRecommendedGrants() {
+  if (!supabase) return mockResponse(MOCK_GRANTS)
+
+  // 로그인 전에는 프로필 조건 없이 인기 있는 지원금을 보여준다 (공공 데이터라 anon 도 읽을 수 있다)
   const userId = await currentUserId()
-  if (!userId) return mockResponse(MOCK_GRANTS)
+  const profile = userId ? await getMyProfile() : EMPTY_PROFILE
+  const base = () => {
+    const query = supabase
+      .from('grants')
+      .select(GRANT_COLUMNS)
+      .eq('is_active', true)
+      .or(recommendFilter(profile))
+    // 관심 분야가 없으면 농어업·행정 같은 '기타' 분야는 빼고 보여준다
+    return profile.interests.length > 0
+      ? query.in('category', profile.interests)
+      : query.neq('category', '기타')
+  }
 
-  const profile = await getMyProfile()
-  let query = supabase
-    .from('grants')
-    .select(GRANT_COLUMNS)
-    .eq('is_active', true)
-    .or(`deadline.is.null,deadline.gte.${todayString()}`)
-    .order('deadline', { ascending: true, nullsFirst: false })
-    .limit(RECOMMEND_LIMIT)
-  if (profile.region) query = query.in('region', ['전국', profile.region])
-  if (profile.interests.length > 0) query = query.in('category', profile.interests)
+  const soon = new Date(Date.now() + URGENT_LOOKAHEAD_DAYS * 86400000).toISOString().slice(0, 10)
+  const [popular, urgent] = await Promise.all([
+    base().order('view_count', { ascending: false }).limit(RECOMMEND_LIMIT),
+    base()
+      .not('deadline', 'is', null)
+      .lte('deadline', soon)
+      .order('deadline', { ascending: true })
+      .limit(5),
+  ])
+  if (popular.error) throw popular.error
+  if (urgent.error) throw urgent.error
 
-  const { data, error } = await query
-  if (error) throw error
-  return data.map(toGrant)
+  const seen = new Set()
+  return [...popular.data, ...urgent.data]
+    .filter((row) => !seen.has(row.id) && seen.add(row.id))
+    .map(toGrant)
 }
 
 /** 신청 준비 현황 { preparing, total } */
@@ -99,17 +158,20 @@ export function isUrgent(grant) {
  * - 그 외: notifications 테이블 (신청 현황 변경 등)
  */
 export async function getNotifications() {
+  if (!supabase) return mockResponse(MOCK_NOTIFICATIONS)
   const userId = await currentUserId()
-  if (!userId) return mockResponse(MOCK_NOTIFICATIONS)
 
-  const [grants, { data: rows, error }] = await Promise.all([
+  const [grants, storedResult] = await Promise.all([
     getRecommendedGrants(),
-    supabase
-      .from('notifications')
-      .select('id, type, message, read, created_at, grant:grants(id, title, deadline)')
-      .order('created_at', { ascending: false })
-      .limit(20),
+    userId
+      ? supabase
+          .from('notifications')
+          .select('id, type, message, read, created_at, grant:grants(id, title, deadline)')
+          .order('created_at', { ascending: false })
+          .limit(20)
+      : { data: [], error: null },
   ])
+  const { data: rows, error } = storedResult
   if (error) throw error
 
   const deadlineAlerts = grants.filter(isUrgent).map((grant) => ({
@@ -239,19 +301,59 @@ export async function updateCheckedDocuments(grantId, checkedDocuments) {
   return { grantId, status, checkedDocuments }
 }
 
+/**
+ * 지원금 찾기 화면용 목록 조회
+ * @param {{ keyword?: string, category?: string, sido?: string, page?: number, pageSize?: number }} options
+ *   sido: '' 전체 | '전국' 전국 사업만 | 시도 이름 (그 지역 + 전국)
+ * @returns {Promise<{ grants: object[], total: number }>}
+ */
+export async function findGrants({ keyword = '', category = '', sido = '', page = 0, pageSize = 12 } = {}) {
+  const text = keyword.trim().replace(/[%_,()]/g, '')
+
+  if (!supabase) {
+    const filtered = MOCK_GRANTS.filter(
+      (grant) =>
+        (!text || grant.title.includes(text)) && (!category || grant.category === category),
+    )
+    return mockResponse({ grants: filtered, total: filtered.length })
+  }
+
+  const conditions = [`or(deadline.is.null,deadline.gte.${todayString()})`]
+  if (sido === '전국') {
+    conditions.push('region_sido.is.null')
+  } else if (sido) {
+    const sidos = [sido, MERGED_SIDO[sido]].filter(Boolean)
+    conditions.push(`or(region_sido.is.null,region_sido.in.(${sidos.join(',')}))`)
+  }
+  if (text) conditions.push(`or(title.ilike.*${text}*,description.ilike.*${text}*)`)
+
+  let query = supabase
+    .from('grants')
+    .select(GRANT_COLUMNS, { count: 'exact' })
+    .eq('is_active', true)
+    .or(`and(${conditions.join(',')})`)
+  if (category) query = query.eq('category', category)
+
+  const { data, error, count } = await query
+    .order('view_count', { ascending: false })
+    .range(page * pageSize, page * pageSize + pageSize - 1)
+  if (error) throw error
+  return { grants: data.map(toGrant), total: count ?? 0 }
+}
+
 /** 지원금 이름으로 검색 (서류 체크 화면 상단 검색창) */
 export async function searchGrants(keyword) {
   const text = keyword.trim()
   if (!text) return []
-  const userId = await currentUserId()
-  if (!userId) {
-    return mockResponse(MOCK_GRANTS.filter((grant) => grant.title.includes(text)))
-  }
+  if (!supabase) return mockResponse(MOCK_GRANTS.filter((grant) => grant.title.includes(text)))
+
   const { data, error } = await supabase
     .from('grants')
     .select(GRANT_COLUMNS)
     .eq('is_active', true)
+    .or(`deadline.is.null,deadline.gte.${todayString()}`)
     .ilike('title', `%${text.replace(/[%_,()]/g, '')}%`)
+    .order('view_count', { ascending: false })
     .limit(8)
   if (error) throw error
   return data.map(toGrant)

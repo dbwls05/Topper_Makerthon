@@ -231,6 +231,14 @@
 
 .agent-grant-title {
   padding-right: 28px; /* 담기 버튼 자리 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.agent-grant-benefit {
+  gap: 8px;
 }
 
 .agent-grant-save {

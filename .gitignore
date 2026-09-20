@@ -8,3 +8,6 @@ dist/
 *.local
 .DS_Store
 Thumbs.db
+
+# 정부24 동기화 --dry-run 샘플
+gov24-sample.json

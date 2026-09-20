@@ -168,17 +168,30 @@ Deno.serve(async (req) => {
     .eq("id", user.id)
     .maybeSingle();
 
+  // 추천 후보: 마감 전 + 전국/내 시도 + 내 나이 + 관심 분야, 인기순 (화면의 getRecommendedGrants 와 같은 기준)
+  const conditions = [`or(deadline.is.null,deadline.gte.${today()})`];
+  if (profile?.region) {
+    const merged: Record<string, string> = { 광주광역시: "전남광주통합특별시", 전라남도: "전남광주통합특별시" };
+    const sidos = [profile.region, merged[profile.region]].filter(Boolean);
+    conditions.push(`or(region_sido.is.null,region_sido.in.(${sidos.join(",")}))`);
+  }
+  if (profile?.birth_year) {
+    const age = new Date().getFullYear() - profile.birth_year;
+    conditions.push(`or(age_min.is.null,age_min.lte.${age})`, `or(age_max.is.null,age_max.gte.${age})`);
+  }
   let grantsQuery = supabase
     .from("grants")
     .select(
-      "id, category, title, description, agency, region, deadline, benefit, apply_url, documents",
+      "id, category, title, description, agency, region, deadline, apply_period, benefit, apply_url, documents, targets, income_levels",
     )
     .eq("is_active", true)
-    .or(`deadline.is.null,deadline.gte.${today()}`)
+    .or(`and(${conditions.join(",")})`)
+    .order("deadline", { ascending: true, nullsFirst: false })
+    .order("view_count", { ascending: false })
     .limit(MAX_CANDIDATES);
-  if (profile?.region) {
-    grantsQuery = grantsQuery.in("region", ["전국", profile.region]);
-  }
+  grantsQuery = profile?.interests?.length
+    ? grantsQuery.in("category", profile.interests)
+    : grantsQuery.neq("category", "기타");
   const { data: grants, error: grantsError } = await grantsQuery;
   if (grantsError)
     return json(

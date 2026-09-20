@@ -12,9 +12,9 @@ import robotProfile from '../assets/robot-profile.png'
 const GRID_SIZE = 3
 
 // 상시 모집(마감일 없음)은 D-day 대신 '상시'
-function formatDDay(dDay) {
-  if (dDay === null) return '상시'
-  return dDay === 0 ? 'D-Day' : `D-${dDay}`
+function formatDDay(grant) {
+  if (grant.dDay === null) return grant.periodLabel ?? '상시'
+  return grant.dDay === 0 ? 'D-Day' : `D-${grant.dDay}`
 }
 
 // 예: "MONDAY · SEPTEMBER 19"
@@ -47,7 +47,7 @@ function DeadlineCard({ grants }) {
                     {grant.region} · {grant.category}
                   </p>
                 </div>
-                <span className="deadline-dday">{formatDDay(grant.dDay)}</span>
+                <span className="deadline-dday">{formatDDay(grant)}</span>
               </li>
             )
           })}
@@ -74,11 +74,11 @@ function GrantCard({ grant }) {
           <PinIcon /> {grant.agency}
         </span>
         <span>
-          <CalendarIcon /> {formatDDay(grant.dDay)}
+          <CalendarIcon /> {formatDDay(grant)}
         </span>
       </p>
       <Link to="/search" className="grant-benefit">
-        {grant.benefit}
+        <span className="grant-benefit-text">{grant.benefit}</span>
         <ChevronRightIcon color="#9ca1ab" />
       </Link>
     </article>

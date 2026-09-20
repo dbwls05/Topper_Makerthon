@@ -578,7 +578,28 @@
 .grant-desc {
   margin-top: 10px;
   font-size: 14px;
+  line-height: 1.5;
   color: #8a8f99;
+}
+
+/* 정부24 데이터는 문구가 길어서 카드 높이가 들쭉날쭉하지 않게 줄 수를 제한 */
+.grant-title,
+.grant-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.grant-desc {
+  min-height: 3em;
+}
+
+.grant-benefit-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .grant-meta {
@@ -601,6 +622,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   border-top: 1px solid #e6e8ee;
   font-size: 14px;
   font-weight: 600;
